@@ -124,7 +124,7 @@ export default function Home() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-hud text-primary/70">EXPIRATION TIMER</label>
+                    <label className="text-[10px] font-hud text-primary/70">EXPIRATION</label>
                     <Select value={expiration} onValueChange={setExpiration}>
                       <SelectTrigger className="bg-background/50 border-primary/30 text-primary font-mono h-11">
                         <SelectValue placeholder="Select timeframe" />
