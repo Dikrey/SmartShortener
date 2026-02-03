@@ -76,7 +76,7 @@ export async function registerRoutes(
 
   // Resolve URL (for interstitial)
   app.get(api.urls.resolve.path, async (req, res) => {
-    const { code } = req.params;
+    const code = req.params.code as string;
     const url = await storage.getUrlByCode(code);
 
     if (!url) {

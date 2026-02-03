@@ -27,17 +27,16 @@ export function GlitchButton({
       disabled={disabled}
       {...props}
     >
-      <span className="relative z-10 flex items-center justify-center gap-2 group-hover:animate-pulse">
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-white transition-opacity" />
+      <span className="relative z-10 flex items-center justify-center gap-2 glow-text">
         {children}
       </span>
       
-      {/* Glitch Effect Layers */}
-      {!disabled && (
-        <>
-          <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity" />
-          <span className="absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] group-hover:animate-[shimmer_1s_infinite]" />
-        </>
-      )}
+      {/* HUD Corner Accents */}
+      <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-primary/50" />
+      <div className="absolute top-0 right-0 w-1 h-1 border-t border-r border-primary/50" />
+      <div className="absolute bottom-0 left-0 w-1 h-1 border-b border-l border-primary/50" />
+      <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-primary/50" />
     </button>
   );
 }
