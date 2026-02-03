@@ -1,106 +1,104 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Retro Cyberpunk Palette */
-  --background: 260 30% 12%;    /* Dark Purple/Black */
-  --foreground: 130 100% 50%;   /* Terminal Green */
+  /* Galactic Starship Palette */
+  --background: 222 47% 7%;      /* Deep Space Black */
+  --foreground: 180 100% 50%;    /* HUD Cyan */
   
-  --primary: 130 100% 50%;      /* Neon Green */
-  --primary-foreground: 0 0% 0%; 
+  --primary: 180 100% 50%;       /* HUD Cyan */
+  --primary-foreground: 222 47% 7%; 
   
-  --secondary: 320 100% 50%;    /* Hot Pink */
-  --secondary-foreground: 260 30% 12%;
+  --secondary: 280 100% 60%;     /* Plasma Purple */
+  --secondary-foreground: 0 0% 100%;
   
-  --accent: 60 100% 50%;        /* Cyber Yellow */
+  --accent: 45 100% 50%;         /* Warning Amber */
   --accent-foreground: 0 0% 0%;
   
-  --destructive: 0 100% 50%;    /* Red */
-  --destructive-foreground: 0 0% 0%;
+  --destructive: 0 100% 50%;     /* Emergency Red */
+  --destructive-foreground: 0 0% 100%;
 
-  --muted: 260 20% 20%;
-  --muted-foreground: 130 60% 70%;
+  --muted: 222 20% 15%;
+  --muted-foreground: 180 30% 60%;
   
-  --border: 130 100% 50%;
-  --input: 260 20% 20%;
-  --ring: 130 100% 50%;
+  --border: 180 100% 50% / 0.3;
+  --input: 222 20% 10%;
+  --ring: 180 100% 50%;
 
-  --radius: 0px; /* Brutalist/Retro has sharp corners */
+  --radius: 4px;
   
-  --font-display: 'Press Start 2P', cursive;
+  --font-display: 'Orbitron', sans-serif;
+  --font-hud: 'Press Start 2P', cursive;
   --font-mono: 'Space Mono', monospace;
+}
+
+.dark {
+  --background: 222 47% 4%;
+  --foreground: 180 100% 50%;
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground;
-    font-family: var(--font-mono);
-    background-image: 
-      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-      linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 2px, 3px 100%;
+    font-family: var(--font-display);
+    background: radial-gradient(circle at center, #1a1a2e 0%, #07070a 100%);
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply uppercase tracking-widest text-primary drop-shadow-[2px_2px_0px_rgba(255,0,255,0.7)];
+    @apply uppercase tracking-widest text-primary drop-shadow-[0_0_10px_rgba(0,255,255,0.5)];
   }
 }
 
 @layer utilities {
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-lg;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .hud-border {
+    @apply border border-primary/30 relative;
+    &::before {
+      content: '';
+      @apply absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-primary;
+    }
+    &::after {
+      content: '';
+      @apply absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-primary;
+    }
+  }
+
+  .star-field {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: transparent;
+  }
+
   .scanline {
     width: 100%;
-    height: 100px;
-    z-index: 10;
-    background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(0,0,0,0) 100%);
+    height: 2px;
+    z-index: 50;
+    background: rgba(0, 255, 255, 0.1);
     opacity: 0.1;
-    position: absolute;
-    bottom: 100%;
-    animation: scanline 10s linear infinite;
+    position: fixed;
+    top: 0;
+    animation: scanline-move 8s linear infinite;
     pointer-events: none;
   }
 
-  @keyframes scanline {
-    0% { bottom: 100%; }
-    100% { bottom: -100px; }
+  @keyframes scanline-move {
+    0% { top: 0; }
+    100% { top: 100%; }
   }
 
-  .text-shadow-retro {
-    text-shadow: 2px 2px 0px #FF00FF;
+  .glow-text {
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
   }
-  
-  .box-shadow-retro {
-    box-shadow: 4px 4px 0px #FF00FF;
-  }
-
-  .glitch-hover:hover {
-    animation: glitch-anim 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
-  }
-
-  @keyframes glitch-anim {
-    0% { transform: translate(0) }
-    20% { transform: translate(-2px, 2px) }
-    40% { transform: translate(-2px, -2px) }
-    60% { transform: translate(2px, 2px) }
-    80% { transform: translate(2px, -2px) }
-    100% { transform: translate(0) }
-  }
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 12px;
-}
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-::-webkit-scrollbar-thumb {
-  background: #39ff14;
-  border: 2px solid #1a1a1a;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #ff00ff;
 }
