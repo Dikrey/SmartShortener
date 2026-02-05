@@ -169,8 +169,6 @@
 
 /* Create star shadows */
 :root {
-  --star-shadows-sm: 
-    1883px 1419px #fff, 142px 1969px #fff, 1928px 1864px #fff, 1493px 880px #fff, 1530px 586px #fff, 933px 148px #fff, 1699px 1279px #fff, 1801px 1888px #fff, 1916px 143px #fff, 1221px 490px #fff, 715px 1238px #fff, 95px 1886px #fff, 1629px 1205px #fff, 1664px 843px #fff, 831px 496px #fff, 1282px 1434px #fff, 383px 1358px #fff, 127px 1152px #fff, 1424px 1774px #fff, 1255px 1018px #fff, 853px 1459px #fff, 1374px 1269px #fff, 685px 843px #fff, 1195px 1563px #fff, 1287px 903px #fff, 1319px 1782px #fff, 686px 1536px #fff, 180px 1419px #fff, 642px 1195px #fff, 1108px 632px #fff, 1408px 1504px #fff, 1696px 1548px #fff, 1417px 921px #fff, 829px 1839px #fff, 1656px 631px #fff, 843px 1869px #fff, 1697px 1032px #fff, 1022px 1894px #fff, 64px 1014px #fff, 893px 1543px #fff, 1481px 1333px #fff, 1237px 125px #fff, 1603px 1539px #fff, 1251px 1373px #fff, 1699px 1532px #fff, 477px 839px #fff, 1912px 1883px #fff, 198px 844px #fff, 1230px 109px #fff;
-  --star-shadows-md:
-    1426px 876px #fff, 1930px 939px #fff, 1246px 1756px #fff, 1515px 1823px #fff, 1856px 1237px #fff, 1838px 1555px #fff, 786px 1135px #fff, 497px 889px #fff, 1837px 146px #fff, 345px 168px #fff, 353px 185px #fff, 519px 1538px #fff, 1315px 1500px #fff, 891px 1581px #fff, 1221px 1253px #fff, 795px 1109px #fff, 42px 1133px #fff, 936px 45px #fff, 451px 197px #fff, 883px 117px #fff, 493px 123px #fff, 893px 1769px #fff, 1402px 140px #fff, 126px 1048px #fff, 1249px 123px #fff, 1611px 1779px #fff, 1275px 1845px #fff, 1756px 1058px #fff, 1263px 1709px #fff, 1145px 33px #fff, 1438px 1318px #fff, 1412px 28px #fff, 1195px 956px #fff, 1009px 1531px #fff, 189px 929px #fff, 1944px 109px #fff, 1290px 1898px #fff, 1421px 406px #fff, 1930px 1083px #fff, 574px 1101px #fff, 1568px 1111px #fff, 1582px 1888px #fff, 755px 1322px #fff, 461px 1586px #fff, 1134px 1250px #fff, 1513px 1853px #fff, 1111px 176px #fff, 831px 644px #fff;
+  --shadows-sm: 10px 10px #fff, 50px 70px #fff, 120px 30px #fff, 200px 90px #fff, 250px 40px #fff;
+  --shadows-md: 30px 100px #fff, 80px 10px #fff, 150px 120px #fff, 220px 150px #fff, 280px 80px #fff;
 }

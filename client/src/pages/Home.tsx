@@ -64,11 +64,11 @@ export default function Home() {
   const { toast } = useToast();
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
-  const typedUrl = useTypewriter(shortenedUrl, 40);
+  // const typedUrl = useTypewriter(shortenedUrl, 40); // Temporarily disabled
   const [isCopied, setIsCopied] = useState(false);
-  const { scrollYProgress } = useScroll();
-  const headerY = useTransform(scrollYProgress, [0, 0.1], [0, -50]);
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
+  // const { scrollYProgress } = useScroll(); // Temporarily disabled
+  // const headerY = useTransform(scrollYProgress, [0, 0.1], [0, -50]); // Temporarily disabled
+  // const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]); // Temporarily disabled
 
   const mutation = useMutation({
     mutationFn: async (data: { originalUrl: string; customCode?: string; expiration: string; password?: string; honeypot?: string }) => {
@@ -158,7 +158,7 @@ export default function Home() {
       <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
       
       {/* Animated Particles */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
@@ -181,13 +181,12 @@ export default function Home() {
             }}
           />
         ))}
-      </div>
+      </div> */}
       
-      {showConfetti && <ReactConfetti width={width} height={height} colors={['#06b6d4', '#3b82f6', '#8b5cf6', '#ffffff', '#f59e0b']} />}
+      {/* {showConfetti && <ReactConfetti width={width} height={height} colors={['#06b6d4', '#3b82f6', '#8b5cf6', '#ffffff', '#f59e0b']} />} */}
 
       {/* Enhanced Header with Parallax Effect */}
       <motion.header 
-        style={{ y: headerY, opacity: headerOpacity }}
         className="h-20 border-b border-white/5 backdrop-blur-xl flex items-center justify-between px-8 relative z-50"
       >
         <div className="flex items-center gap-3">
@@ -409,8 +408,7 @@ export default function Home() {
                           <div className="absolute -top-3 left-6 px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-black text-[10px] font-bold rounded">WARP LINK READY</div>
                           <div className="flex items-center gap-4">
                             <div className="flex-1 font-mono text-cyan-400 text-sm overflow-hidden truncate">
-                              {typedUrl}
-                              <span className="animate-pulse">_</span>
+                              {shortenedUrl}
                             </div>
                             <div className="flex gap-2">
                               <button 
