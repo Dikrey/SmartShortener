@@ -1,22 +1,44 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
-import { api } from "@shared/routes";
+import { api, ResolveUrlResponse } from "@shared/routes";
 import { z } from "zod";
 import { nanoid } from "nanoid";
 import { addMinutes, addHours, addDays, addWeeks } from "date-fns";
+import bcrypt from "bcrypt";
+import { rateLimit } from 'express-rate-limit'; // Import rateLimit
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  // Rate limiter for URL creation
+  const shortenLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 5, // Limit each IP to 5 requests per `windowMs`
+    message: "Too many URL creation requests from this IP, please try again after a minute.",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  });
   
   // Create Short URL
-  app.post(api.urls.create.path, async (req, res) => {
+  app.post(api.urls.create.path, shortenLimiter, async (req, res) => { // Apply limiter here
     try {
       const input = api.urls.create.input.parse(req.body);
+
+      // Honeypot check: If this field is filled, it's likely a bot
+      if (input.honeypot) {
+        console.warn("Honeypot field filled, likely a bot submission.");
+        return res.status(400).json({ message: "Bad Request: Honeypot triggered." });
+      }
       
       let shortCode = input.customCode;
+      let passwordHash: string | undefined;
+
+      if (input.password && input.password.length > 0) {
+        passwordHash = await bcrypt.hash(input.password, 10);
+      }
       
       // If no custom code, generate one
       if (!shortCode) {
@@ -60,6 +82,7 @@ export async function registerRoutes(
         originalUrl: input.originalUrl,
         shortCode: shortCode,
         expiresAt: expiresAt,
+        passwordHash: passwordHash, // Store the hashed password
       });
 
       res.status(201).json(url);
@@ -70,28 +93,87 @@ export async function registerRoutes(
           field: err.errors[0].path.join('.'),
         });
       }
-      throw err;
+      console.error("Error shortening URL:", err); // Log the error for debugging
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
   // Resolve URL (for interstitial)
   app.get(api.urls.resolve.path, async (req, res) => {
     const code = req.params.code as string;
-    const url = await storage.getUrlByCode(code);
+    
+    try {
+      const url = await storage.getUrlByCode(code);
 
-    if (!url) {
-      return res.status(404).json({ message: "URL not found" });
+      if (!url) {
+        return res.status(404).json({ message: "URL not found" });
+      }
+
+      // Check expiration
+      if (url.expiresAt && new Date() > new Date(url.expiresAt)) {
+        return res.status(410).json({ message: "URL has expired" });
+      }
+
+      // Increment clicks (fire and forget)
+      storage.incrementClicks(url.id).catch(console.error);
+
+      // Construct the response to include isPasswordProtected
+      const response: ResolveUrlResponse = {
+        id: url.id,
+        originalUrl: url.originalUrl,
+        shortCode: url.shortCode,
+        expiresAt: url.expiresAt,
+        createdAt: url.createdAt,
+        clicks: url.clicks,
+        isPasswordProtected: !!url.passwordHash, // True if passwordHash exists
+      };
+
+      res.json(response);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      console.error("Error resolving URL:", err); // Log the error for debugging
+      res.status(500).json({ message: "Internal server error" });
     }
+  });
 
-    // Check expiration
-    if (url.expiresAt && new Date() > new Date(url.expiresAt)) {
-      return res.status(410).json({ message: "URL has expired" });
+  // Verify Password for protected URLs
+  app.post(api.urls.verifyPassword.path, async (req, res) => {
+    const code = req.params.code as string;
+    
+    try {
+      const input = api.urls.verifyPassword.input.parse(req.body);
+      const url = await storage.getUrlByCode(code);
+
+      if (!url) {
+        return res.status(404).json({ message: "URL not found" });
+      }
+
+      if (!url.passwordHash) {
+        return res.status(400).json({ message: "URL is not password protected" });
+      }
+
+      const isMatch = await bcrypt.compare(input.password, url.passwordHash);
+
+      if (isMatch) {
+        return res.status(200).json({ message: "Password verified successfully" });
+      } else {
+        return res.status(401).json({ message: "Incorrect password" });
+      }
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      console.error("Error verifying password:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    // Increment clicks (fire and forget)
-    storage.incrementClicks(url.id).catch(console.error);
-
-    res.json(url);
   });
 
   // Serve static files is handled by Vite in dev/prod setup automatically

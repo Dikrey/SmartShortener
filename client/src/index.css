@@ -1,104 +1,176 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Galactic Starship Palette */
-  --background: 222 47% 7%;      /* Deep Space Black */
-  --foreground: 180 100% 50%;    /* HUD Cyan */
+  /* Starship Theme Palette */
+  --background: 223 47% 7%;      /* Deep Navy */
+  --foreground: 210 40% 96%;     /* Light Slate */
   
-  --primary: 180 100% 50%;       /* HUD Cyan */
-  --primary-foreground: 222 47% 7%; 
+  --primary: 178 98% 48%;        /* Neon Cyan */
+  --primary-foreground: 223 47% 7%; 
   
-  --secondary: 280 100% 60%;     /* Plasma Purple */
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 210 20% 55%;      /* Slate Gray */
   
-  --accent: 45 100% 50%;         /* Warning Amber */
-  --accent-foreground: 0 0% 0%;
+  --accent: 330 90% 65%;         /* Neon Magenta */
   
-  --destructive: 0 100% 50%;     /* Emergency Red */
-  --destructive-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;      /* Bright Red */
 
-  --muted: 222 20% 15%;
-  --muted-foreground: 180 30% 60%;
+  --muted: 223 30% 15%;
+  --muted-foreground: 210 30% 70%;
   
-  --border: 180 100% 50% / 0.3;
-  --input: 222 20% 10%;
-  --ring: 180 100% 50%;
+  --border: 178 98% 48% / 0.2;
+  --input: 223 30% 12%;
+  --ring: 178 98% 55%;
 
-  --radius: 4px;
+  --radius: 8px;
   
-  --font-display: 'Orbitron', sans-serif;
-  --font-hud: 'Press Start 2P', cursive;
+  --font-display: 'Share Tech Mono', monospace;
   --font-mono: 'Space Mono', monospace;
-}
-
-.dark {
-  --background: 222 47% 4%;
-  --foreground: 180 100% 50%;
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground;
-    font-family: var(--font-display);
-    background: radial-gradient(circle at center, #1a1a2e 0%, #07070a 100%);
+    font-family: var(--font-mono);
+    background-color: hsl(var(--background));
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply uppercase tracking-widest text-primary drop-shadow-[0_0_10px_rgba(0,255,255,0.5)];
+    @apply font-medium text-slate-200;
+  }
+}
+
+/* Starfield Background */
+.star-field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -10;
+  background: transparent;
+  overflow: hidden;
+}
+
+.star-field::after, .star-field::before {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  background: white;
+  border-radius: 50%;
+  animation-name: anim-star;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.star-field::after {
+  box-shadow: var(--shadows-sm);
+  animation-duration: 150s;
+}
+.star-field::before {
+  box-shadow: var(--shadows-md);
+  animation-duration: 300s;
+}
+
+@keyframes anim-star {
+  from { transform: translateY(0px); }
+  to { transform: translateY(-2000px); }
+}
+
+/* Galaxy Flow Background */
+.galaxy-flow-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -10; /* Keep it below other content */
+  background: 
+    radial-gradient(ellipse at top left, hsla(var(--primary), 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, hsla(var(--accent), 0.1) 0%, transparent 50%),
+    conic-gradient(from 180deg at 50% 50%, hsla(var(--primary), 0.05) 0deg, hsla(var(--accent), 0.05) 90deg, transparent 180deg),
+    linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--background)) 100%);
+  background-size: 
+    120% 120%, /* For radial gradients */
+    130% 130%,
+    100% 100%, /* For conic gradient */
+    100% 100%; /* For base linear gradient */
+  background-position: 
+    0% 0%,
+    100% 100%,
+    0% 0%,
+    0% 0%;
+  animation: galaxy-flow 60s linear infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes galaxy-flow {
+  0% {
+    background-position: 
+      -10% -10%,
+      110% 110%,
+      0% 0%,
+      0% 0%;
+    transform: scale(1);
+  }
+  100% {
+    background-position: 
+      10% 10%,
+      -10% -10%,
+      0% 0%,
+      0% 0%;
+    transform: scale(1.05);
   }
 }
 
 @layer utilities {
-  .glass-panel {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-lg;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  }
-
-  .hud-border {
-    @apply border border-primary/30 relative;
-    &::before {
-      content: '';
-      @apply absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-primary;
-    }
-    &::after {
-      content: '';
-      @apply absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-primary;
-    }
-  }
-
-  .star-field {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background: transparent;
+  .glow-text {
+    text-shadow: 0 0 8px hsl(var(--primary) / 0.7);
   }
 
   .scanline {
     width: 100%;
-    height: 2px;
-    z-index: 50;
-    background: rgba(0, 255, 255, 0.1);
-    opacity: 0.1;
+    height: 100vh;
+    z-index: -1;
+    background: linear-gradient(
+      to bottom,
+      hsla(0,0%,100%,0) 0%,
+      hsla(0,0%,100%,.05) 50%,
+      hsla(0,0%,100%,0) 100%
+    );
+    background-size: 100% 3px;
     position: fixed;
     top: 0;
-    animation: scanline-move 8s linear infinite;
+    animation: scanline-move 10s linear infinite;
     pointer-events: none;
+    opacity: 0.5;
   }
 
   @keyframes scanline-move {
-    0% { top: 0; }
-    100% { top: 100%; }
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
   }
 
-  .glow-text {
-    text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
+  .rocket-launch {
+    animation: rocket-launch 1s ease-in-out infinite;
   }
+
+  @keyframes rocket-launch {
+    0% { transform: translateY(0) rotate(-45deg); }
+    50% { transform: translateY(-10px) rotate(-45deg) scale(1.1); }
+    100% { transform: translateY(0) rotate(-45deg); }
+  }
+}
+
+/* Create star shadows */
+:root {
+  --star-shadows-sm: 
+    1883px 1419px #fff, 142px 1969px #fff, 1928px 1864px #fff, 1493px 880px #fff, 1530px 586px #fff, 933px 148px #fff, 1699px 1279px #fff, 1801px 1888px #fff, 1916px 143px #fff, 1221px 490px #fff, 715px 1238px #fff, 95px 1886px #fff, 1629px 1205px #fff, 1664px 843px #fff, 831px 496px #fff, 1282px 1434px #fff, 383px 1358px #fff, 127px 1152px #fff, 1424px 1774px #fff, 1255px 1018px #fff, 853px 1459px #fff, 1374px 1269px #fff, 685px 843px #fff, 1195px 1563px #fff, 1287px 903px #fff, 1319px 1782px #fff, 686px 1536px #fff, 180px 1419px #fff, 642px 1195px #fff, 1108px 632px #fff, 1408px 1504px #fff, 1696px 1548px #fff, 1417px 921px #fff, 829px 1839px #fff, 1656px 631px #fff, 843px 1869px #fff, 1697px 1032px #fff, 1022px 1894px #fff, 64px 1014px #fff, 893px 1543px #fff, 1481px 1333px #fff, 1237px 125px #fff, 1603px 1539px #fff, 1251px 1373px #fff, 1699px 1532px #fff, 477px 839px #fff, 1912px 1883px #fff, 198px 844px #fff, 1230px 109px #fff;
+  --star-shadows-md:
+    1426px 876px #fff, 1930px 939px #fff, 1246px 1756px #fff, 1515px 1823px #fff, 1856px 1237px #fff, 1838px 1555px #fff, 786px 1135px #fff, 497px 889px #fff, 1837px 146px #fff, 345px 168px #fff, 353px 185px #fff, 519px 1538px #fff, 1315px 1500px #fff, 891px 1581px #fff, 1221px 1253px #fff, 795px 1109px #fff, 42px 1133px #fff, 936px 45px #fff, 451px 197px #fff, 883px 117px #fff, 493px 123px #fff, 893px 1769px #fff, 1402px 140px #fff, 126px 1048px #fff, 1249px 123px #fff, 1611px 1779px #fff, 1275px 1845px #fff, 1756px 1058px #fff, 1263px 1709px #fff, 1145px 33px #fff, 1438px 1318px #fff, 1412px 28px #fff, 1195px 956px #fff, 1009px 1531px #fff, 189px 929px #fff, 1944px 109px #fff, 1290px 1898px #fff, 1421px 406px #fff, 1930px 1083px #fff, 574px 1101px #fff, 1568px 1111px #fff, 1582px 1888px #fff, 755px 1322px #fff, 461px 1586px #fff, 1134px 1250px #fff, 1513px 1853px #fff, 1111px 176px #fff, 831px 644px #fff;
 }
