@@ -118,33 +118,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative overflow-hidden">
       {/* Background effects */}
-      <div className="star-field"><div/></div>
       <div className="scanline" />
-      
-      {/* Animated particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-destructive/20"
-            style={{
-              width: Math.random() * 6 + 2,
-              height: Math.random() * 6 + 2,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 5 + 5,
-              repeat: Infinity,
-              repeatType: "loop",
-            }}
-          />
-        ))}
-      </div>
       
       <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-2 gap-6 z-10">
         {/* Left side: Error message and attempted URL */}

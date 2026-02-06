@@ -39,7 +39,6 @@ export default function Redirect() {
   const [glitchActive, setGlitchActive] = useState(false);
   const [redirectCancelled, setRedirectCancelled] = useState(false);
   const [securityLevel, setSecurityLevel] = useState(0);
-  const [particles, setParticles] = useState<Array<{id: number, x: number, y: number, size: number, speed: number}>>([]);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [captchaQuestion, setCaptchaQuestion] = useState("");
   const [securityQuestion, setSecurityQuestion] = useState("");
@@ -94,29 +93,46 @@ export default function Redirect() {
   }, [data, passwordVerified]); 
 
  
-  useEffect(() => {
-    const newParticles = Array.from({ length: 80 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 4 + 1,
-      speed: Math.random() * 20 + 10
-    }));
-    setParticles(newParticles);
-    
+   
+
  
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    setCaptchaQuestion(`${num1} + ${num2} = ?`);
-    
-    const questions = [
-      "What is the color of the sky?",
-      "How many days in a week?",
-      "What is 2 + 2?",
-      "What comes after Monday?"
-    ];
-    setSecurityQuestion(questions[Math.floor(Math.random() * questions.length)]);
-  }, []);
+    useEffect(() => {
+
+ 
+      const num1 = Math.floor(Math.random() * 10) + 1;
+
+ 
+      const num2 = Math.floor(Math.random() * 10) + 1;
+
+ 
+      setCaptchaQuestion(`${num1} + ${num2} = ?`);
+
+ 
+      
+
+ 
+      const questions = [
+
+ 
+        "What is the color of the sky?",
+
+ 
+        "How many days in a week?",
+
+ 
+        "What is 2 + 2?",
+
+ 
+        "What comes after Monday?"
+
+ 
+      ];
+
+ 
+      setSecurityQuestion(questions[Math.floor(Math.random() * questions.length)]);
+
+ 
+    }, []);
 
 
   useEffect(() => {
@@ -260,31 +276,6 @@ export default function Redirect() {
 
   const mainContent = (
     <>
-      <div className="star-field">
-        <div/>
-        {particles.map(particle => (
-          <motion.div
-            key={particle.id}
-            className="absolute rounded-full bg-white opacity-20"
-            style={{
-              width: `${particle.size}px`,
-              height: `${particle.size}px`,
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              opacity: [0.2, 0.5, 0.2],
-              x: [0, Math.random() * 10 - 5, 0],
-            }}
-            transition={{
-              duration: particle.speed,
-              repeat: Infinity,
-              repeatType: "loop",
-            }}
-          />
-        ))}
-      </div>
       <div className="scanline" />
       {glitchActive && (
         <motion.div

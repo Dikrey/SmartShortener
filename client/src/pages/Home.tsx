@@ -192,35 +192,8 @@ export default function Home() {
   return (
     <div className="min-h-screen galaxy-flow-bg bg-gradient-to-br from-[#020617] via-[#0a0e27] to-[#0f172a] text-slate-200 overflow-y-auto overflow-x-hidden relative selection:bg-cyan-500/30 pb-20">
       {/* Enhanced Background FX */}
-      <div className="star-field opacity-40" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.15),transparent_70%)]" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
-
-      {/* Animated Particles - Fixed z-index and pointer-events */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-gradient-to-r from-cyan-500/10 to-blue-500/10 blur-xl"
-            style={{
-              width: Math.random() * 300 + 50,
-              height: Math.random() * 300 + 50,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              x: [0, Math.random() * 100 - 50],
-              y: [0, Math.random() * 100 - 50],
-              opacity: [0.1, 0.3, 0.1],
-            }}
-            transition={{
-              duration: Math.random() * 20 + 10,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-          />
-        ))}
-      </div>
 
     {showConfetti && <ReactConfetti width={width} height={height} colors={['#06b6d4', '#3b82f6', '#8b5cf6', '#ffffff', '#f59e0b']} />} 
 
@@ -834,23 +807,6 @@ export default function Home() {
           -webkit-overflow-scrolling: touch;
           -webkit-tap-highlight-color: transparent;
           touch-action: manipulation;
-        }
-        
-        /* Ensure particles don't interfere with interactions */
-        .star-field {
-          pointer-events: none;
-          z-index: 0;
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-        }
-        
-        .star-field div {
-           background-image: radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
-                             radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0));
-           background-size: 200px 200px;
         }
         
         /* Enhanced mobile responsiveness */
