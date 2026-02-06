@@ -36,24 +36,37 @@
     @apply bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground;
     font-family: var(--font-mono);
     background-color: hsl(var(--background));
+
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    height: 100%;
+    overflow-y: auto;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     @apply font-medium text-slate-200;
   }
+  
+  /* Fix for input elements */
+  input, button, select, textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
 }
 
-/* Starfield Background */
+
 .star-field {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -10;
+  z-index: -1; /* Changed from -10 to -1 */
   background: transparent;
   overflow: hidden;
+  pointer-events: none; /* Explicitly disable pointer events */
 }
 
 .star-field::after, .star-field::before {
@@ -66,6 +79,7 @@
   animation-name: anim-star;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+  pointer-events: none; /* Explicitly disable pointer events */
 }
 
 .star-field::after {
@@ -82,31 +96,31 @@
   to { transform: translateY(-2000px); }
 }
 
-/* Galaxy Flow Background */
+
 .galaxy-flow-bg {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: -10; /* Keep it below other content */
+  z-index: -1; /* Changed from -10 to -1 */
   background: 
     radial-gradient(ellipse at top left, hsla(var(--primary), 0.1) 0%, transparent 50%),
     radial-gradient(ellipse at bottom right, hsla(var(--accent), 0.1) 0%, transparent 50%),
     conic-gradient(from 180deg at 50% 50%, hsla(var(--primary), 0.05) 0deg, hsla(var(--accent), 0.05) 90deg, transparent 180deg),
     linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--background)) 100%);
   background-size: 
-    120% 120%, /* For radial gradients */
+    120% 120%,
     130% 130%,
-    100% 100%, /* For conic gradient */
-    100% 100%; /* For base linear gradient */
+    100% 100%, 
+    100% 100%; 
   background-position: 
     0% 0%,
     100% 100%,
     0% 0%,
     0% 0%;
   animation: galaxy-flow 60s linear infinite alternate;
-  pointer-events: none;
+  pointer-events: none; 
 }
 
 @keyframes galaxy-flow {
@@ -136,7 +150,7 @@
   .scanline {
     width: 100%;
     height: 100vh;
-    z-index: -1;
+    z-index: 1;
     background: linear-gradient(
       to bottom,
       hsla(0,0%,100%,0) 0%,
@@ -147,7 +161,7 @@
     position: fixed;
     top: 0;
     animation: scanline-move 10s linear infinite;
-    pointer-events: none;
+    pointer-events: none; 
     opacity: 0.5;
   }
 
@@ -165,10 +179,28 @@
     50% { transform: translateY(-10px) rotate(-45deg) scale(1.1); }
     100% { transform: translateY(0) rotate(-45deg); }
   }
+  
+  .touch-fix {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
 }
 
-/* Create star shadows */
+
 :root {
   --shadows-sm: 10px 10px #fff, 50px 70px #fff, 120px 30px #fff, 200px 90px #fff, 250px 40px #fff;
   --shadows-md: 30px 100px #fff, 80px 10px #fff, 150px 120px #fff, 220px 150px #fff, 280px 80px #fff;
+}
+
+
+@media (max-width: 768px) {
+  button, input, select, textarea, a {
+    position: relative;
+    z-index: 10;
+  }
+ 
+  body {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
 }
