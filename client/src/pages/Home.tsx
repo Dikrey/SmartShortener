@@ -196,8 +196,8 @@ export default function Home() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.15),transparent_70%)]" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
 
-      {/* Animated Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated Particles - Fixed z-index and pointer-events */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         {[...Array(20)].map((_, i) => (
           <motion.div
             key={i}
@@ -224,8 +224,8 @@ export default function Home() {
 
     {showConfetti && <ReactConfetti width={width} height={height} colors={['#06b6d4', '#3b82f6', '#8b5cf6', '#ffffff', '#f59e0b']} />} 
 
-      {/* Enhanced Header with Parallax Effect */}
-      <motion.header className="h-20 border-b border-white/5 backdrop-blur-xl flex items-center justify-between px-8 relative z-50">
+      {/* Enhanced Header with Parallax Effect - Increased z-index */}
+      <motion.header className="h-20 border-b border-white/5 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 relative z-40">
         <div className="flex items-center gap-3">
           <motion.div
             variants={floatVariants}
@@ -341,8 +341,8 @@ export default function Home() {
           </motion.div>
         </aside>
 
-        {/* Enhanced Main Content with Tabs */}
-        <div className="lg:col-span-6 space-y-8">
+        {/* Enhanced Main Content with Tabs - Increased z-index for mobile */}
+        <div className="lg:col-span-6 space-y-8 relative z-20">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -812,35 +812,52 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Enhanced Footer */}
-      <footer className="fixed bottom-0 w-full h-10 bg-black/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-8 text-[10px] font-mono text-slate-600 z-50">
-        <div className="flex items-center gap-4">
+      {/* Enhanced Footer - Fixed for mobile */}
+      <footer className="fixed bottom-0 w-full h-10 bg-black/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-4 md:px-8 text-[10px] font-mono text-slate-600 z-30">
+        <div className="flex items-center gap-2 md:gap-4">
           <span className="animate-pulse mr-2">●</span>
-          <span>SECTOR: 07-G // PROTOCOL: STAR-SHORT // v.4.2.0-PRO</span>
+          <span className="hidden md:inline">SECTOR: 07-G // PROTOCOL: STAR-SHORT // v.4.2.0-PRO</span>
+          <span className="md:hidden">STAR-SHORT v4.2.0</span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-green-400">STATUS: ONLINE</span>
-          <span>PING: 12ms</span>
+        <div className="flex items-center gap-2 md:gap-4">
+          <span className="text-green-400 hidden md:inline">STATUS: ONLINE</span>
+          <span className="text-green-400 md:hidden">ONLINE</span>
+          <span className="hidden md:inline">PING: 12ms</span>
         </div>
       </footer>
 
       <style>{`
         .font-display { font-family: 'Orbitron', sans-serif; }
-        /* Mencegah kedip saat scroll di mobile */
-  html, body {
-    overscroll-behavior-y: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Memastikan partikel tidak menghalangi klik */
-  .star-field {
-    pointer-events: none;
-    z-index: 0;
-  }
+        
+        /* Improved mobile scrolling and touch interactions */
+        html, body {
+          -webkit-overflow-scrolling: touch;
+          -webkit-tap-highlight-color: transparent;
+          touch-action: manipulation;
+        }
+        
+        /* Ensure particles don't interfere with interactions */
+        .star-field {
+          pointer-events: none;
+          z-index: 0;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+        
         .star-field div {
            background-image: radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)),
                              radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0));
            background-size: 200px 200px;
+        }
+        
+        /* Enhanced mobile responsiveness */
+        @media (max-width: 768px) {
+          .main-content {
+            padding-bottom: 3rem; /* Add space for fixed footer */
+          }
         }
       `}</style>
     </div>
