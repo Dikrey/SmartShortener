@@ -4,203 +4,141 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Starship Theme Palette */
-  --background: 223 47% 7%;      /* Deep Navy */
-  --foreground: 210 40% 96%;     /* Light Slate */
-  
-  --primary: 178 98% 48%;        /* Neon Cyan */
-  --primary-foreground: 223 47% 7%; 
-  
-  --secondary: 210 20% 55%;      /* Slate Gray */
-  
-  --accent: 330 90% 65%;         /* Neon Magenta */
-  
-  --destructive: 0 84% 60%;      /* Bright Red */
-
-  --muted: 223 30% 15%;
-  --muted-foreground: 210 30% 70%;
-  
-  --border: 178 98% 48% / 0.2;
-  --input: 223 30% 12%;
-  --ring: 178 98% 55%;
-
-  --radius: 8px;
-  
-  --font-display: 'Share Tech Mono', monospace;
-  --font-mono: 'Space Mono', monospace;
-}
-
+/* Modern & Cool UI Updates */
 @layer base {
+  :root {
+    --primary: 178 98% 48%;
+    --accent: 330 90% 65%;
+    --muted: 223 30% 15%;
+    --background: 223 47% 7%;
+    --foreground: 210 40% 96%;
+    --highlight: rgba(14,165,233,0.15);
+    --radius: 8px;
+    --transition-speed: 0.3s;
+  }
+
   body {
-    @apply bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground;
-    font-family: var(--font-mono);
-    background-color: hsl(var(--background));
-
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-    height: 100%;
-    overflow-y: auto;
+    font-family: 'Space Mono', monospace;
+    background: linear-gradient(135deg, #020617, #0a0e27, #0f172a);
+    color: #eaeaea;
+    overflow-x: hidden;
+    transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
-    @apply font-medium text-slate-200;
-  }
-  
-  /* Fix for input elements */
-  input, button, select, textarea {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-  }
-}
-
-
-.star-field {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1; /* Changed from -10 to -1 */
-  background: transparent;
-  overflow: hidden;
-  pointer-events: none; /* Explicitly disable pointer events */
-}
-
-.star-field::after, .star-field::before {
-  content: "";
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  background: white;
-  border-radius: 50%;
-  animation-name: anim-star;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  pointer-events: none; /* Explicitly disable pointer events */
-}
-
-.star-field::after {
-  box-shadow: var(--shadows-sm);
-  animation-duration: 150s;
-}
-.star-field::before {
-  box-shadow: var(--shadows-md);
-  animation-duration: 300s;
-}
-
-@keyframes anim-star {
-  from { transform: translateY(0px); }
-  to { transform: translateY(-2000px); }
-}
-
-
-.galaxy-flow-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1; /* Changed from -10 to -1 */
-  background: 
-    radial-gradient(ellipse at top left, hsla(var(--primary), 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, hsla(var(--accent), 0.1) 0%, transparent 50%),
-    conic-gradient(from 180deg at 50% 50%, hsla(var(--primary), 0.05) 0deg, hsla(var(--accent), 0.05) 90deg, transparent 180deg),
-    linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--background)) 100%);
-  background-size: 
-    120% 120%,
-    130% 130%,
-    100% 100%, 
-    100% 100%; 
-  background-position: 
-    0% 0%,
-    100% 100%,
-    0% 0%,
-    0% 0%;
-  animation: galaxy-flow 60s linear infinite alternate;
-  pointer-events: none; 
-}
-
-@keyframes galaxy-flow {
-  0% {
-    background-position: 
-      -10% -10%,
-      110% 110%,
-      0% 0%,
-      0% 0%;
-    transform: scale(1);
-  }
-  100% {
-    background-position: 
-      10% 10%,
-      -10% -10%,
-      0% 0%,
-      0% 0%;
-    transform: scale(1.05);
-  }
-}
-
-@layer utilities {
-  .glow-text {
-    text-shadow: 0 0 8px hsl(var(--primary) / 0.7);
+  .toggle-dark-light {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 999;
+    cursor: pointer;
   }
 
-  .scanline {
-    width: 100%;
-    height: 100vh;
-    z-index: 1;
-    background: linear-gradient(
-      to bottom,
-      hsla(0,0%,100%,0) 0%,
-      hsla(0,0%,100%,.05) 50%,
-      hsla(0,0%,100%,0) 100%
-    );
-    background-size: 100% 3px;
+  /* Smooth Hover Effect for Buttons */
+  .button {
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+    padding: 10px 20px;
+    border-radius: 50px;
+    transition: all 0.2s ease;
+    font-weight: bold;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .button:hover {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #3b82f6;
+  }
+
+  /* Enhanced Background Animation */
+  .space-bg {
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
     position: fixed;
     top: 0;
-    animation: scanline-move 10s linear infinite;
-    pointer-events: none; 
-    opacity: 0.5;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    animation: spaceAnimation 20s linear infinite;
   }
 
-  @keyframes scanline-move {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(100vh); }
+  @keyframes spaceAnimation {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.1);
+    }
   }
 
-  .rocket-launch {
-    animation: rocket-launch 1s ease-in-out infinite;
+  /* Floating Action Button (FAB) */
+  .fab-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #06b6d4;
+    color: white;
+    padding: 15px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    animation: fabBounce 2s ease-in-out infinite;
+    transition: transform 0.2s ease;
   }
 
-  @keyframes rocket-launch {
-    0% { transform: translateY(0) rotate(-45deg); }
-    50% { transform: translateY(-10px) rotate(-45deg) scale(1.1); }
-    100% { transform: translateY(0) rotate(-45deg); }
+  .fab-button:hover {
+    transform: scale(1.1);
   }
-  
-  .touch-fix {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
+
+  @keyframes fabBounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
-}
 
-
-:root {
-  --shadows-sm: 10px 10px #fff, 50px 70px #fff, 120px 30px #fff, 200px 90px #fff, 250px 40px #fff;
-  --shadows-md: 30px 100px #fff, 80px 10px #fff, 150px 120px #fff, 220px 150px #fff, 280px 80px #fff;
-}
-
-
-@media (max-width: 768px) {
-  button, input, select, textarea, a {
-    position: relative;
-    z-index: 10;
+  /* Animated Tooltip for Icons */
+  .icon-tooltip {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
- 
-  body {
-    -webkit-overflow-scrolling: touch;
-    overflow-y: auto;
+
+  .icon-tooltip.active {
+    opacity: 1;
+  }
+
+  /* QR Code Modal */
+  .qr-code-modal {
+    display: none;
+    background-color: rgba(0, 0, 0, 0.7);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .qr-code-modal.active {
+    display: flex;
+  }
+
+  .qr-code-container {
+    background: #0f172a;
+    padding: 30px;
+    border-radius: 8px;
   }
 }

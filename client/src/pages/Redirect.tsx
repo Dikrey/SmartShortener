@@ -39,8 +39,9 @@ export default function Redirect() {
   const [glitchActive, setGlitchActive] = useState(false);
   const [redirectCancelled, setRedirectCancelled] = useState(false);
   const [securityLevel, setSecurityLevel] = useState(0);
-  const [captchaAnswer, setCaptchaAnswer] = useState("");
-  const [captchaQuestion, setCaptchaQuestion] = useState("");
+  const [captchaInput, setCaptchaInput] = useState(""); // Renamed from captchaAnswer
+  const [captchaCodeDisplay, setCaptchaCodeDisplay] = useState(""); // Renamed from captchaQuestion
+  const [showCaptchaError, setShowCaptchaError] = useState(false); // New state for CAPTCHA error
   const [securityQuestion, setSecurityQuestion] = useState("");
   const [securityAnswer, setSecurityAnswer] = useState("");
   const [showUrlPreview, setShowUrlPreview] = useState(false);
@@ -54,6 +55,7 @@ export default function Redirect() {
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [showPasswordText, setShowPasswordText] = useState(false); // New state for password visibility
 
  
   const isHuman = data?.isPasswordProtected ? (passwordVerified && captchaVerified) : captchaVerified; // Depends on data, passwordVerified, captchaVerified
@@ -92,48 +94,27 @@ export default function Redirect() {
     }
   }, [data, passwordVerified]); 
 
- 
-   
+  const generateAlphanumericCaptcha = useCallback(() => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCaptchaCodeDisplay(code);
+    setCaptchaInput(""); // Clear previous input
+    setShowCaptchaError(false);
+  }, []);
 
- 
-    useEffect(() => {
-
- 
-      const num1 = Math.floor(Math.random() * 10) + 1;
-
- 
-      const num2 = Math.floor(Math.random() * 10) + 1;
-
- 
-      setCaptchaQuestion(`${num1} + ${num2} = ?`);
-
- 
-      
-
- 
-      const questions = [
-
- 
-        "What is the color of the sky?",
-
- 
-        "How many days in a week?",
-
- 
-        "What is 2 + 2?",
-
- 
-        "What comes after Monday?"
-
- 
-      ];
-
- 
-      setSecurityQuestion(questions[Math.floor(Math.random() * questions.length)]);
-
- 
-    }, []);
-
+  useEffect(() => {
+    generateAlphanumericCaptcha(); // Generate on initial mount
+    const questions = [
+      "What is the color of the sky?",
+      "How many days in a week?",
+      "What is 2 + 2?",
+      "What comes after Monday?"
+    ];
+    setSecurityQuestion(questions[Math.floor(Math.random() * questions.length)]);
+  }, [generateAlphanumericCaptcha]); // Dependency on useCallback
 
   useEffect(() => {
    
@@ -180,31 +161,39 @@ export default function Redirect() {
     }
   }, [data, passwordVerified, captchaVerified, redirectCancelled]);
 
-
   const handleHumanVerification = () => {
-    setVerificationStep(1);
+    // Start fingerprint scan visual
+    setVerificationStep(1); // Set to fingerprint scan
     setTimeout(() => {
-      setVerificationStep(2);
+      setVerificationStep(2); // Progress to scanning biometric
       setTimeout(() => {
-        setVerificationStep(3);
-      }, 1500);
-    }, 1000);
+        setVerificationStep(3); // Progress to analyzing neural patterns
+        setTimeout(() => {
+          setVerificationStep(4); // Progress to CAPTCHA challenge
+        }, 1500); // Delay before showing CAPTCHA
+      }, 1000); // Delay before scanning biometric
+    }, 1000); // Delay before fingerprint scan
   };
 
   const handleCaptchaVerification = () => {
-    const [num1, num2] = captchaQuestion.split(' + ').map((n, i) => i === 0 ? parseInt(n) : parseInt(n.split(' =')[0]));
-    const correctAnswer = num1 + num2;
-    
-    if (parseInt(captchaAnswer) === correctAnswer) {
-      setVerificationStep(4);
+    if (captchaInput.toUpperCase() === captchaCodeDisplay.toUpperCase()) {
+      // Correct CAPTCHA, proceed to security question or final verification
+      setVerificationStep(5); // Assuming verificationStep 5 is the next step for security question
       setTimeout(() => {
-        setCaptchaVerified(true);
-        controls.start({ scale: [1, 1.2, 1] });
+        // No direct setCaptchaVerified(true) here, as security question is next
+        controls.start({ scale: [1, 1.2, 1] }); // Some animation for success
       }, 1500);
     } else {
-
+      setShowCaptchaError(true);
       setGlitchActive(true);
+      toast({
+        title: "VERIFIKASI GAGAL",
+        description: "Kode verifikasi tidak cocok. Coba lagi.",
+        variant: "destructive",
+      });
       setTimeout(() => setGlitchActive(false), 500);
+      setCaptchaInput(""); // Clear input on error
+      generateAlphanumericCaptcha(); // Generate new CAPTCHA on error
     }
   };
 
@@ -217,11 +206,17 @@ export default function Redirect() {
     };
     
     if (securityAnswer.toLowerCase() === (correctAnswers[securityQuestion as keyof typeof correctAnswers] || "")) {
-      setCaptchaVerified(true);
+      setVerificationStep(6); // Advance to the final verified state
+      setCaptchaVerified(true); // Set captchaVerified to true
       controls.start({ scale: [1, 1.2, 1] });
     } else {
       setGlitchActive(true);
       setTimeout(() => setGlitchActive(false), 500);
+      toast({
+        title: "VERIFIKASI GAGAL",
+        description: "Jawaban keamanan salah. Coba lagi.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -511,16 +506,25 @@ export default function Redirect() {
                   </p>
                 </div>
                 <form onSubmit={(e) => { e.preventDefault(); verifyPasswordMutation.mutate(passwordInput); }} className="space-y-4">
-                  <StarshipInput
-                    label="TRANSMISSION KEY"
-                    type="password"
-                    placeholder="Enter password"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    error={passwordError || undefined}
-                    required
-                    isPassword // Use the isPassword prop
-                  />
+                  <div className="relative">
+                    <StarshipInput
+                      label="TRANSMISSION KEY"
+                      type={showPasswordText ? "text" : "password"}
+                      placeholder="Enter password"
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      error={passwordError || undefined}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordText(!showPasswordText)}
+                      className="absolute right-3 inset-y-0 flex items-center text-slate-400 hover:text-primary transition-colors"
+                      aria-label={showPasswordText ? "Hide password" : "Show password"}
+                    >
+                      {showPasswordText ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
                   <StarshipButton type="submit" disabled={verifyPasswordMutation.isPending} className="w-full">
                     {verifyPasswordMutation.isPending ? "VERIFYING..." : "UNLOCK TRANSMISSION"}
                   </StarshipButton>
@@ -629,18 +633,40 @@ export default function Redirect() {
                     {verificationStep === 0 && (
                       <div className="space-y-4">
                         <p className="text-sm text-secondary">
-                          Please complete the security verification to proceed to the destination.
+                          Mohon selesaikan verifikasi keamanan untuk melanjutkan ke tujuan.
                         </p>
                         <StarshipButton onClick={handleHumanVerification} className="w-full">
                           <div className="flex items-center justify-center gap-2">
                             <Fingerprint className="w-4 h-4" />
-                            BEGIN VERIFICATION
+                            MULAI VERIFIKASI
                           </div>
                         </StarshipButton>
                       </div>
                     )}
                     
-                    {verificationStep === 1 && (
+                    {verificationStep === 1 && ( // Fingerprint scan
+                      <div className="space-y-4">
+                        <div className="flex flex-col items-center justify-center mb-4">
+                          <motion.div
+                            initial={{ scale: 0.8, opacity: 0.5 }}
+                            animate={{ scale: [0.8, 1.1, 0.8], opacity: [0.5, 1, 0.5] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                            className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center overflow-hidden"
+                          >
+                            <Fingerprint className="w-16 h-16 text-white" />
+                            <motion.div
+                              initial={{ y: "100%" }}
+                              animate={{ y: "-100%" }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                              className="absolute inset-0 bg-white/20"
+                            />
+                          </motion.div>
+                          <p className="text-sm text-secondary mt-4 animate-pulse">Pindai Sidik Jari Anda...</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {verificationStep === 2 && ( // Biometric data scanning
                       <div className="space-y-4">
                         <div className="flex justify-center">
                           <motion.div
@@ -650,11 +676,11 @@ export default function Redirect() {
                             <Scan className="w-12 h-12 text-primary" />
                           </motion.div>
                         </div>
-                        <p className="text-sm text-secondary">Scanning biometric data...</p>
+                        <p className="text-sm text-secondary">Memindai data biometrik...</p>
                       </div>
                     )}
                     
-                    {verificationStep === 2 && (
+                    {verificationStep === 3 && ( // Neural patterns analysis
                       <div className="space-y-4">
                         <div className="flex justify-center">
                           <motion.div
@@ -664,40 +690,67 @@ export default function Redirect() {
                             <Radar className="w-12 h-12 text-primary" />
                           </motion.div>
                         </div>
-                        <p className="text-sm text-secondary">Analyzing neural patterns...</p>
+                        <p className="text-sm text-secondary">Menganalisis pola saraf...</p>
                       </div>
                     )}
                     
-                    {verificationStep === 3 && (
+                    {verificationStep === 4 && ( // CAPTCHA challenge
                       <div className="space-y-4">
-                        <p className="text-sm text-secondary mb-4">Solve the security challenge:</p>
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="font-mono text-lg">{captchaQuestion}</span>
-                          <StarshipInput
-                            type="number"
-                            value={captchaAnswer}
-                            onChange={(e) => setCaptchaAnswer(e.target.value)}
-                            className="w-24 text-center"
-                          />
+                        <p className="text-sm text-secondary mb-4">Masukkan kode verifikasi di bawah ini:</p>
+                        <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+                          <span className="flex-1 min-w-[120px] text-center font-mono text-2xl md:text-3xl tracking-widest py-3 px-2 bg-white/5 rounded-lg border border-white/10 select-none">
+                            {captchaCodeDisplay}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={generateAlphanumericCaptcha}
+                            className="p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors active:scale-95 flex-shrink-0"
+                            aria-label="Refresh CAPTCHA"
+                          >
+                            <RefreshCw className="w-5 h-5 text-slate-400" />
+                          </button>
                         </div>
+                        <StarshipInput
+                          type="text"
+                          value={captchaInput}
+                          onChange={(e) => {
+                            setCaptchaInput(e.target.value);
+                            if (showCaptchaError) setShowCaptchaError(false);
+                          }}
+                          placeholder="Ketik kode di sini"
+                          isInvalid={showCaptchaError}
+                          className="text-center"
+                          required
+                        />
+                        {showCaptchaError && (
+                          <p className="text-xs text-red-400 mt-1">Kode verifikasi salah. Coba lagi.</p>
+                        )}
                         <StarshipButton onClick={handleCaptchaVerification} className="w-full">
-                          VERIFY
+                          VERIFIKASI
                         </StarshipButton>
                       </div>
                     )}
                     
-                    {verificationStep === 4 && (
+                    {verificationStep === 5 && ( // Security question challenge
                       <div className="space-y-4">
-                        <p className="text-sm text-secondary mb-4">Answer the security question:</p>
+                        <p className="text-sm text-secondary mb-4">Jawab pertanyaan keamanan:</p>
                         <p className="font-mono text-sm mb-2">{securityQuestion}</p>
                         <StarshipInput
                           value={securityAnswer}
                           onChange={(e) => setSecurityAnswer(e.target.value)}
-                          placeholder="Your answer..."
+                          placeholder="Jawaban Anda..."
                         />
                         <StarshipButton onClick={handleSecurityVerification} className="w-full">
-                          FINAL VERIFICATION
+                          VERIFIKASI AKHIR
                         </StarshipButton>
+                      </div>
+                    )}
+
+                    {verificationStep === 6 && ( // Final Verified State
+                      <div className="space-y-4 text-center">
+                        <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
+                        <h3 className="text-xl font-display text-green-400">VERIFIKASI BERHASIL!</h3>
+                        <p className="text-sm text-secondary">Semua sistem telah memverifikasi identitas Anda.</p>
                       </div>
                     )}
                   </div>
@@ -718,6 +771,22 @@ export default function Redirect() {
                       <Zap className="w-3 h-3" />
                       Stabilizing Warp Field...
                     </p>
+                    <StarshipButton
+                      onClick={() => {
+                        setWarping(true);
+                        setTimeout(() => {
+                          if (!redirectCancelled) {
+                            window.location.href = data.originalUrl;
+                          }
+                        }, 500);
+                      }}
+                      className="mt-4" // Add some margin
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>JUMP NOW</span>
+                        <ExternalLink className="w-5 h-5" />
+                      </div>
+                    </StarshipButton>
                   </div>
                 )}
       
@@ -742,23 +811,6 @@ export default function Redirect() {
       
                 {/* Action buttons */}
                 <div className="space-y-4">
-                  {isHuman && !redirectCancelled && (
-                    <StarshipButton
-                      onClick={() => {
-                        setWarping(true);
-                        setTimeout(() => {
-                          if (!redirectCancelled) {
-                            window.location.href = data.originalUrl;
-                          }
-                        }, 500);
-                      }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>JUMP NOW</span>
-                        <ExternalLink className="w-5 h-5" />
-                      </div>
-                    </StarshipButton>
-                  )}
                   
                   <div className="flex justify-between">
                     <Link href="/">

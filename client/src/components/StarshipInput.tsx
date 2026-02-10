@@ -6,11 +6,16 @@ interface StarshipInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   isPassword?: boolean; // New prop
+  isInvalid?: boolean; // Added prop for general invalid state
 }
 
 export const StarshipInput = forwardRef<HTMLInputElement, StarshipInputProps>(
-  ({ className, label, error, isPassword, type, ...props }, ref) => {
+  ({ className, label, error, isPassword, type, isInvalid, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
+
+    // Determine the effective error message, prioritizing the explicit error prop
+    // but falling back to a generic message if isInvalid is true
+    const effectiveError = error || (isInvalid ? "Input is invalid" : undefined);
 
     return (
       <div className="w-full space-y-3">
@@ -29,7 +34,7 @@ export const StarshipInput = forwardRef<HTMLInputElement, StarshipInputProps>(
               "transition-all duration-300 ease-in-out",
               "placeholder:text-secondary/50",
               "focus:border-primary focus:shadow-[0_0_15px_hsl(var(--primary)/0.3),_0_0_25px_hsl(var(--primary)/0.2)_inset]",
-              error && "border-destructive text-destructive focus:border-destructive focus:shadow-[0_0_15px_hsl(var(--destructive)/0.3)]",
+              (effectiveError) && "border-destructive text-destructive focus:border-destructive focus:shadow-[0_0_15px_hsl(var(--destructive)/0.3)]",
               className
             )}
             {...props}
@@ -44,9 +49,9 @@ export const StarshipInput = forwardRef<HTMLInputElement, StarshipInputProps>(
             </button>
           )}
         </div>
-        {error && (
+        {effectiveError && (
           <p className="text-destructive text-xs font-mono mt-1">
-            &gt; {error}
+            &gt; {effectiveError}
           </p>
         )}
       </div>
