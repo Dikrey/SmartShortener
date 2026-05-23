@@ -5,36 +5,38 @@ import { Terminal, Eye, EyeOff } from "lucide-react";
 interface StarshipInputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
-  isPassword?: boolean; // New prop
-  isInvalid?: boolean; // Added prop for general invalid state
+  isPassword?: boolean;
+  isInvalid?: boolean;
 }
 
 export const StarshipInput = forwardRef<HTMLInputElement, StarshipInputProps>(
   ({ className, label, error, isPassword, type, isInvalid, ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
-
-    // Determine the effective error message, prioritizing the explicit error prop
-    // but falling back to a generic message if isInvalid is true
-    const effectiveError = error || (isInvalid ? "Input is invalid" : undefined);
+    const effectiveError = error || (isInvalid ? "Input tidak valid" : undefined);
 
     return (
-      <div className="w-full space-y-3">
+      <div className="w-full space-y-2">
         {label && (
-          <label className="flex items-center gap-2 font-display text-sm text-primary/80 uppercase tracking-wider">
-            <Terminal className="w-4 h-4" />
+          <label className="flex items-center gap-2 text-xs font-semibold text-cyan-700 dark:text-primary/80 uppercase tracking-wider">
+            <Terminal className="w-3.5 h-3.5" />
             {label}
           </label>
         )}
         <div className="relative group">
           <input
             ref={ref}
-            type={isPassword && !showPassword ? "password" : type} // Conditionally set type
+            type={isPassword && !showPassword ? "password" : type}
             className={cn(
-              "w-full bg-slate-900/70 border border-primary/20 rounded-md px-4 py-3 font-mono text-slate-200 outline-none",
-              "transition-all duration-300 ease-in-out",
-              "placeholder:text-secondary/50",
-              "focus:border-primary focus:shadow-[0_0_15px_hsl(var(--primary)/0.3),_0_0_25px_hsl(var(--primary)/0.2)_inset]",
-              (effectiveError) && "border-destructive text-destructive focus:border-destructive focus:shadow-[0_0_15px_hsl(var(--destructive)/0.3)]",
+              "w-full rounded-lg px-4 py-3 text-sm outline-none",
+              "font-mono transition-all duration-300",
+              "bg-sky-50 dark:bg-slate-900/70",
+              "border border-cyan-200 dark:border-primary/20",
+              "text-gray-900 dark:text-slate-200",
+              "placeholder:text-gray-400 dark:placeholder:text-slate-500",
+              "focus:border-cyan-500 dark:focus:border-primary",
+              "focus:shadow-[0_0_0_3px_rgba(6,182,212,0.15)] dark:focus:shadow-[0_0_15px_hsl(var(--primary)/0.3),0_0_25px_hsl(var(--primary)/0.15)_inset]",
+              "focus:bg-white dark:focus:bg-slate-900/90",
+              effectiveError && "border-red-400 dark:border-destructive text-red-700 dark:text-destructive focus:border-red-400 dark:focus:border-destructive focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]",
               className
             )}
             {...props}
@@ -43,15 +45,15 @@ export const StarshipInput = forwardRef<HTMLInputElement, StarshipInputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-primary transition-colors"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-slate-400 hover:text-cyan-600 dark:hover:text-primary transition-colors"
             >
-              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           )}
         </div>
         {effectiveError && (
-          <p className="text-destructive text-xs font-mono mt-1">
-            &gt; {effectiveError}
+          <p className="text-red-600 dark:text-destructive text-xs font-medium mt-1 flex items-center gap-1">
+            <span className="text-red-500">▸</span> {effectiveError}
           </p>
         )}
       </div>

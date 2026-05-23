@@ -2,107 +2,42 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useTransform,
-} from "framer-motion";
-import {
-  Copy,
-  Link as LinkIcon,
-  Rocket,
-  Check,
-  Terminal,
-  Activity,
-  ShieldCheck,
-  Zap,
-  History,
-  Globe,
-  Cpu,
-  Gauge,
-  QrCode,
-  BarChart3,
-  Download,
-  Share2,
-  ExternalLink,
-  Sparkles,
-  Layers,
-  LockKeyhole,
-  RefreshCw,
-  Eye,
-  Github,
-  Twitter,
-  Linkedin,
-  Trash2,
+  Copy, Link as LinkIcon, Rocket, Check, Terminal, Activity,
+  ShieldCheck, Zap, History, Globe, Cpu, Gauge, QrCode,
+  BarChart3, Download, Share2, ExternalLink, Sparkles, Layers,
+  LockKeyhole, RefreshCw, Eye, Github, Twitter, Linkedin, Trash2,
+  Sun, Moon, Menu, X,
 } from "lucide-react";
 import ReactConfetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import QRCode from "react-qr-code";
-import { FaWhatsapp as WhatsappIcon } from 'react-icons/fa';
+import { FaWhatsapp as WhatsappIcon } from "react-icons/fa";
 
 import { StarshipCard } from "@/components/StarshipCard";
 import { StarshipInput } from "@/components/StarshipInput";
 import { StarshipButton } from "@/components/StarshipButton";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTheme } from "@/contexts/ThemeContext";
 
-// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
 };
-
 const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
-
-const floatVariants = {
-  hidden: { y: 0 },
-  visible: {
-    y: [-10, 10, -10],
-    transition: {
-      repeat: Infinity,
-      duration: 5,
-      ease: "easeInOut",
-    },
-  },
-};
-
-// New animation for background elements (subtle)
-const bgOrbVariants = {
-  initial: { scale: 0, opacity: 0 },
-  animate: {
-    scale: [0, 1, 1.5, 1],
-    opacity: [0, 0.3, 0.1, 0],
-    rotate: [0, 180, 360],
-    transition: {
-      duration: 20,
-      repeat: Infinity,
-      ease: "linear",
-      delay: Math.random() * 5,
-    },
-  },
+  hidden: { y: 16, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4 } },
 };
 
 export default function Home() {
+  const { theme, toggleTheme } = useTheme();
   const [url, setUrl] = useState("");
   const [customCode, setCustomCode] = useState("");
   const [expiration, setExpiration] = useState("never");
@@ -111,10 +46,9 @@ export default function Home() {
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [history, setHistory] = useState<any[]>(() => {
     try {
-      const storedHistory = localStorage.getItem("shortenedUrlHistory");
-      return storedHistory ? JSON.parse(storedHistory) : [];
-    } catch (error) {
-      console.error("Failed to parse history from localStorage", error);
+      const stored = localStorage.getItem("shortenedUrlHistory");
+      return stored ? JSON.parse(stored) : [];
+    } catch {
       return [];
     }
   });
@@ -128,36 +62,26 @@ export default function Home() {
   const [captchaCode, setCaptchaCode] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
   const [showCaptchaError, setShowCaptchaError] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const heroTitle = useTypewriter("SMARTSHORTENER: ULTIMATE LINK COMPRESSION", 70);
+  const heroTitle = useTypewriter("SMARTSHORTENER: ULTIMATE LINK COMPRESSION", 65);
 
-  // Function to generate random CAPTCHA code
   const generateCaptcha = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
-    for (let i = 0; i < 6; i++) { // 6-character CAPTCHA
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+    for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
     setCaptchaCode(code);
   };
 
   useEffect(() => {
-    generateCaptcha(); // Generate CAPTCHA on initial mount
-    // Effect to save history to localStorage whenever it changes
-    try {
-      localStorage.setItem("shortenedUrlHistory", JSON.stringify(history));
-    } catch (error) {
-      console.error("Failed to save history to localStorage", error);
-    }
+    generateCaptcha();
+    try { localStorage.setItem("shortenedUrlHistory", JSON.stringify(history)); } catch {}
   }, [history]);
 
   const mutation = useMutation({
     mutationFn: async (data: {
-      originalUrl: string;
-      customCode?: string;
-      expiration: string;
-      password?: string;
-      honeypot?: string;
+      originalUrl: string; customCode?: string; expiration: string;
+      password?: string; honeypot?: string;
     }) => {
       const res = await apiRequest("POST", "/api/shorten", data);
       return res.json();
@@ -165,36 +89,20 @@ export default function Home() {
     onSuccess: (data) => {
       const fullUrl = `${window.location.protocol}//${window.location.host}/${data.shortCode}`;
       setShortenedUrl(fullUrl);
-      const newHistoryEntry = {
-        id: data.id,
-        original: url,
-        code: data.shortCode,
-        time: new Date().toLocaleTimeString(),
-        clicks: 0,
-        createdAt: new Date(),
-        fullUrl: fullUrl,
-      };
-      setHistory((prev) =>
-        [
-          newHistoryEntry,
-          ...prev,
-        ].slice(0, 10),
-      );
+      setHistory(prev => [{
+        id: data.id, original: url, code: data.shortCode,
+        time: new Date().toLocaleTimeString(), clicks: 0,
+        createdAt: new Date(), fullUrl,
+      }, ...prev].slice(0, 10));
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
-      toast({
-        title: "WARP DRIVE ACTIVE",
-        description: "Coordinates secured and compressed.",
-      });
-      setPassword("");
-      setHoneypotInput("");
-      setUrl("");
-      setCustomCode("");
+      toast({ title: "✅ Link Berhasil Dibuat!", description: "Tautan pendek Anda sudah siap digunakan." });
+      setPassword(""); setHoneypotInput(""); setUrl(""); setCustomCode("");
     },
     onError: (error: any) => {
       toast({
-        title: "TRANSMISSION FAILED",
-        description: error.message || "An unknown error occurred.",
+        title: "❌ Gagal Membuat Link",
+        description: error.message || "Terjadi kesalahan. Coba lagi.",
         variant: "destructive",
       });
     },
@@ -203,589 +111,429 @@ export default function Home() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) {
-      toast({
-        title: "INPUT REQUIRED",
-        description: "Please provide a URL to shorten.",
-        variant: "destructive",
-      });
+      toast({ title: "URL Diperlukan", description: "Masukkan URL yang ingin dipersingkat.", variant: "destructive" });
       return;
     }
-
-    // CAPTCHA validation
     if (captchaInput.toUpperCase() !== captchaCode.toUpperCase()) {
       setShowCaptchaError(true);
-      toast({
-        title: "VERIFIKASI GAGAL",
-        description: "Kode verifikasi tidak cocok. Coba lagi.",
-        variant: "destructive",
-      });
-      setCaptchaInput(""); // Clear CAPTCHA input
-      generateCaptcha(); // Generate new CAPTCHA
-      return;
+      toast({ title: "Verifikasi Gagal", description: "Kode verifikasi salah. Coba lagi.", variant: "destructive" });
+      setCaptchaInput(""); generateCaptcha(); return;
     }
-
-    // Reset CAPTCHA on successful submission attempt (even if mutation fails later)
-    setCaptchaInput("");
-    generateCaptcha();
-    setShowCaptchaError(false);
-
-    mutation.mutate({
-      originalUrl: url,
-      customCode: customCode || undefined,
-      expiration,
-      password: password || undefined,
-      honeypot: honeypotInput || undefined,
-    });
+    setCaptchaInput(""); generateCaptcha(); setShowCaptchaError(false);
+    mutation.mutate({ originalUrl: url, customCode: customCode || undefined, expiration, password: password || undefined, honeypot: honeypotInput || undefined });
   };
 
   const copyToClipboard = (urlToCopy: string, index?: number) => {
     navigator.clipboard.writeText(urlToCopy);
-    toast({
-      title: "COORDINATES COPIED",
-      description: "Ready for galactic navigation.",
-    });
+    toast({ title: "Tersalin!", description: "Tautan berhasil disalin ke clipboard." });
     setIsCopied(true);
     if (index !== undefined) setCopiedIndex(index);
-    setTimeout(() => {
-      setIsCopied(false);
-      setCopiedIndex(null);
-    }, 2000);
+    setTimeout(() => { setIsCopied(false); setCopiedIndex(null); }, 2000);
   };
 
   const deleteHistoryItem = (id: string) => {
-    setHistory((prev) => {
-      const updatedHistory = prev.filter((item) => item.id !== id);
-      // localStorage.setItem("shortenedUrlHistory", JSON.stringify(updatedHistory)); // This is handled by the useEffect
-      toast({
-        title: "TRANSMISI DIHAPUS",
-        description: "Entri riwayat berhasil dihapus.",
-      });
-      return updatedHistory;
+    setHistory(prev => {
+      const updated = prev.filter(item => item.id !== id);
+      toast({ title: "Dihapus", description: "Riwayat tautan berhasil dihapus." });
+      return updated;
     });
   };
 
   const clearAllHistory = () => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus semua riwayat transmisi?")) {
+    if (window.confirm("Hapus semua riwayat tautan?")) {
       setHistory([]);
-      // localStorage.removeItem("shortenedUrlHistory"); // This is handled by the useEffect setting history to empty array
-      toast({
-        title: "RIWAYAT DIHAPUS",
-        description: "Semua entri riwayat berhasil dihapus.",
-      });
+      toast({ title: "Riwayat Dihapus", description: "Semua riwayat telah dihapus." });
     }
   };
 
-  const shareLink = (platform: string, url: string) => {
-    let shareUrl = "";
-    const text = "Check out this shortened link from SmartShortener!";
-
-    switch (platform) {
-      case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
-        break;
-      case "linkedin":
-        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent("Shortened Link")}&summary=${encodeURIComponent(text)}`;
-        break;
-      case "whatsapp":
-        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`;
-        break;
-      case "copy":
-        copyToClipboard(url);
-        return;
-      default:
-        if (navigator.share) {
-          navigator.share({
-            title: "Shortened Link from Starlink Command",
-            text: text,
-            url: url,
-          }).catch((error) => console.log('Error sharing', error));
-        } else {
-          copyToClipboard(url);
-        }
-        return;
-    }
-    window.open(shareUrl, "_blank");
-  };
-
-  const generateQRCode = () => {
-    setShowQRCode(true);
+  const shareLink = (platform: string, shareUrl: string) => {
+    const text = "Cek tautan pendek ini dari SmartShortener!";
+    let target = "";
+    if (platform === "copy") { copyToClipboard(shareUrl); return; }
+    else if (platform === "twitter") target = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
+    else if (platform === "linkedin") target = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}`;
+    else if (platform === "whatsapp") target = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + shareUrl)}`;
+    if (target) window.open(target, "_blank");
   };
 
   const faqData = [
-    {
-    question: "Siapa Developer Website ini?",
-    answer: "Developer Website ini adalah Raihan_official0307 X Visualcodepo seorang programmer. Anda bisa langsung mengunjungi website https://talk.visualcodepo.my.id untuk langsung bertanya dan di sana Anda bisa mengirim pesan atau melaporkan bug pada semua website/aplikasi yang saya buat."
-    },
-    {
-      question: "Apa itu Starlink Command?",
-      answer: "Starlink Command adalah layanan pemendek URL canggih yang dirancang untuk mengkompresi tautan panjang menjadi tautan pendek yang mudah dibagikan. Dilengkapi dengan fitur seperti Kode QR, riwayat tautan, dan keamanan transmisi data."
-    },
-    {
-      question: "Apakah Starlink Command gratis?",
-      answer: "Ya, Starlink Command menyediakan fitur dasar pemendekan URL secara gratis. Untuk fitur-fitur premium dan analitik yang lebih mendalam, Anda dapat mempertimbangkan untuk meng-upgrade akun Anda di masa mendatang."
-    },
-    {
-      question: "Bagaimana cara kerja Kode QR?",
-      answer: "Setelah Anda memendekkan URL, kami akan secara otomatis menghasilkan Kode QR untuk tautan pendek Anda. Anda dapat mengunduh atau memindai Kode QR ini dengan perangkat seluler untuk mengakses tautan secara cepat."
-    },
-    {
-      question: "Apakah tautan yang dipersingkat aman?",
-      answer: "Kami menggunakan protokol enkripsi canggih untuk mengamankan setiap tautan yang Anda buat. Fitur opsional seperti perlindungan sandi juga tersedia untuk keamanan ekstra."
-    },
-    {
-      question: "Bisakah saya melihat riwayat tautan saya?",
-      answer: "Ya, Anda dapat melihat daftar tautan yang baru saja Anda persingkat di sesi browser ini pada bagian 'Riwayat Transmisi'. Data ini disimpan secara lokal di browser Anda."
-    }
+    { question: "Siapa Developer Website ini?", answer: "Developer Website ini adalah Raihan_official0307 X Visualcodepo. Kunjungi https://talk.visualcodepo.my.id untuk bertanya atau melaporkan bug." },
+    { question: "Apa itu Starlink Command?", answer: "Starlink Command adalah layanan pemendek URL canggih yang mengkompresi tautan panjang menjadi tautan pendek, dilengkapi QR Code, riwayat tautan, dan keamanan data." },
+    { question: "Apakah Starlink Command gratis?", answer: "Ya, fitur dasar sepenuhnya gratis. Fitur premium akan tersedia di masa mendatang." },
+    { question: "Bagaimana cara kerja Kode QR?", answer: "Setiap tautan pendek otomatis menghasilkan QR Code yang dapat dipindai atau diunduh untuk akses cepat." },
+    { question: "Apakah tautan yang dipersingkat aman?", answer: "Kami menggunakan enkripsi untuk mengamankan setiap tautan. Proteksi password juga tersedia untuk keamanan tambahan." },
+    { question: "Bisakah saya melihat riwayat tautan?", answer: "Ya, di tab Riwayat Anda dapat melihat 10 tautan terakhir yang dibuat di sesi browser ini." },
   ];
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen galaxy-flow-bg bg-gradient-to-br from-[#020617] via-[#0a0e27] to-[#0f172a] text-slate-200 overflow-y-auto overflow-x-hidden relative selection:bg-cyan-500/30 pb-20">
-        {/* Enhanced Background FX */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.15),transparent_70%)]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent" />
-        {/* Dynamic Orbs for background "wow" factor */}
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50/40 to-cyan-50/30 dark:from-[#020617] dark:via-[#0a0e27] dark:to-[#0f172a] text-gray-900 dark:text-slate-200 overflow-y-auto overflow-x-hidden relative selection:bg-cyan-500/30 pb-20 transition-colors duration-400">
+
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(6,182,212,0.07),transparent_70%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.05),transparent_60%)] pointer-events-none" />
+        {/* Animated orbs (dark mode only) */}
+        {[...Array(4)].map((_, i) => (
           <motion.div
             key={i}
-            variants={bgOrbVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute rounded-full bg-cyan-500/10"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1, 1.4, 0.8], opacity: [0, 0.15, 0.05, 0], rotate: [0, 180, 360] }}
+            transition={{ duration: 18 + i * 3, repeat: Infinity, ease: "linear", delay: i * 4 }}
+            className="absolute rounded-full bg-cyan-500/20 dark:bg-cyan-500/10 hidden dark:block"
             style={{
-              width: `${Math.random() * 100 + 50}px`,
-              height: `${Math.random() * 100 + 50}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              filter: 'blur(30px)',
-              zIndex: 0,
+              width: `${80 + i * 40}px`, height: `${80 + i * 40}px`,
+              top: `${10 + i * 20}%`, left: `${15 + i * 22}%`,
+              filter: "blur(40px)", zIndex: 0,
             }}
           />
         ))}
 
-      {showConfetti && <ReactConfetti width={width} height={height} colors={['#06b6d4', '#3b82f6', '#8b5cf6', '#ffffff', '#f59e0b']} />} 
+        {showConfetti && <ReactConfetti width={width} height={height} colors={["#06b6d4", "#3b82f6", "#8b5cf6", "#ffffff", "#f59e0b"]} />}
+        <div className="scanline" />
 
-        {/* Enhanced Header with Parallax Effect - Increased z-index */}
-        <motion.header className="h-20 border-b border-white/5 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 relative z-40">
+        {/* ── HEADER ── */}
+        <motion.header
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="sticky top-0 z-40 h-16 md:h-18 border-b border-gray-200 dark:border-white/5 bg-white/80 dark:bg-[#020617]/80 backdrop-blur-xl flex items-center justify-between px-4 md:px-8"
+        >
+          {/* Logo */}
           <div className="flex items-center gap-3">
             <motion.div
-              variants={floatVariants}
-              initial="hidden"
-              animate="visible"
-              className="p-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-500/30 shadow-lg shadow-cyan-500/20"
+              animate={{ y: [-3, 3, -3] }}
+              transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+              className="p-2.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-xl border border-cyan-500/30 shadow-sm dark:shadow-cyan-500/10"
             >
-              <Rocket className="w-6 h-6 text-cyan-400" />
+              <Rocket className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
             </motion.div>
             <div>
-              <span className="font-display tracking-[0.3em] uppercase text-sm text-cyan-400">
+              <span className="font-bold tracking-[0.2em] uppercase text-sm text-cyan-700 dark:text-cyan-400">
                 Starlink Command
               </span>
-              <div className="text-xs text-slate-500 font-mono">v4.2.0 PRO</div>
+              <div className="text-[10px] text-gray-400 dark:text-slate-500 font-mono">v4.2.0 PRO</div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-[10px] font-mono text-slate-500 tracking-tighter">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-green-400">SYSTEM: OPTIMAL</span>
+
+          {/* Desktop Status Bar */}
+          <div className="hidden md:flex items-center gap-6 text-[10px] font-mono tracking-tighter">
+            <div className="flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-green-600 dark:text-green-400">SYSTEM: OPTIMAL</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Globe className="w-3 h-3 text-blue-400" />
+            <div className="flex items-center gap-1.5 text-gray-400 dark:text-slate-500">
+              <Globe className="w-3 h-3 text-blue-500 dark:text-blue-400" />
               <span>REGION: EARTH_01</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-3 h-3 text-purple-400" />
+            <div className="flex items-center gap-1.5 text-gray-400 dark:text-slate-500">
+              <ShieldCheck className="w-3 h-3 text-purple-500 dark:text-purple-400" />
               <span>SSL: ACTIVE</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Cpu className="w-3 h-3 text-orange-400" />
-              <span>CPU: 12%</span>
-            </div>
+          </div>
+
+          {/* Right Controls */}
+          <div className="flex items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <motion.button
+                  onClick={toggleTheme}
+                  whileTap={{ scale: 0.9 }}
+                  className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-slate-300 transition-all duration-200 border border-gray-200 dark:border-white/10"
+                  data-testid="button-theme-toggle"
+                >
+                  <AnimatePresence mode="wait">
+                    {theme === "dark" ? (
+                      <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <Sun className="w-4 h-4" />
+                      </motion.div>
+                    ) : (
+                      <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                        <Moon className="w-4 h-4" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent><p>{theme === "dark" ? "Beralih ke Light Mode" : "Beralih ke Dark Mode"}</p></TooltipContent>
+            </Tooltip>
           </div>
         </motion.header>
 
-        {/* Hero Section with Typewriter Effect */}
-        <section className="relative z-10 text-center py-16 md:py-24 max-w-4xl mx-auto px-4">
-          <motion.h1
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-3xl md:text-5xl font-display font-bold text-white uppercase tracking-wider leading-tight"
+        {/* ── HERO ── */}
+        <section className="relative z-10 text-center py-10 md:py-16 max-w-4xl mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/20 text-cyan-700 dark:text-cyan-400 text-xs font-mono mb-6"
           >
-            {heroTitle}
-          </motion.h1>
-          <motion.p
+            <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+            TRANSMISSION SYSTEM ONLINE
+          </motion.div>
+          <motion.h1
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
-            className="mt-4 text-md md:text-lg text-slate-400 max-w-2xl mx-auto"
+            transition={{ duration: 0.7 }}
+            className="text-2xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white uppercase tracking-wide leading-tight"
+            style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            Kompresi tautan superior untuk navigasi antar-galaksi Anda. Cepat, aman, dan futuristik.
+            {heroTitle}
+            <motion.span
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+              className="text-cyan-500 dark:text-cyan-400"
+            >_</motion.span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.4 }}
+            className="mt-4 text-sm md:text-base text-gray-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed"
+          >
+            Kompresi tautan superior. Cepat, aman, dan futuristik untuk navigasi lintas platform.
           </motion.p>
         </section>
 
-        <main className="max-w-[1400px] mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 mb-10">
-          {/* Enhanced Left Sidebar with Analytics */}
-          <aside className="lg:col-span-3 space-y-6 hidden lg:block">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-4"
-            >
-              <div className="p-5 bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl backdrop-blur-sm">
-                <h3 className="flex items-center gap-2 text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-4">
+        {/* ── MAIN LAYOUT ── */}
+        <main className="max-w-[1400px] mx-auto px-4 md:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10 mb-10">
+
+          {/* Left Sidebar */}
+          <aside className="lg:col-span-3 space-y-5 hidden lg:block">
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
+              {/* Analytics */}
+              <div className="p-5 bg-white/80 dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.02] border border-gray-200 dark:border-white/10 rounded-xl backdrop-blur-sm shadow-sm dark:shadow-none transition-colors">
+                <h3 className="flex items-center gap-2 text-[10px] font-bold text-cyan-700 dark:text-cyan-500 uppercase tracking-widest mb-4">
                   <BarChart3 className="w-3 h-3" /> Core Analytics
                 </h3>
                 <div className="space-y-4">
                   {[
-                    {
-                      label: "Links Created",
-                      val: "1,247",
-                      change: "+12%",
-                      color: "bg-cyan-500",
-                    },
-                    {
-                      label: "Total Clicks",
-                      val: "8.5K",
-                      change: "+23%",
-                      color: "bg-blue-500",
-                    },
-                    {
-                      label: "Avg. CTR",
-                      val: "6.8%",
-                      change: "+5%",
-                      color: "bg-purple-500",
-                    },
+                    { label: "Links Created", val: "1,247", change: "+12%", color: "bg-cyan-500" },
+                    { label: "Total Clicks", val: "8.5K", change: "+23%", color: "bg-blue-500" },
+                    { label: "Avg. CTR", val: "6.8%", change: "+5%", color: "bg-purple-500" },
                   ].map((stat, i) => (
-                    <div key={i} className="space-y-2">
+                    <div key={i} className="space-y-1.5">
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-400">{stat.label}</span>
-                        <span className="text-white font-mono">{stat.val}</span>
+                        <span className="text-gray-500 dark:text-slate-400">{stat.label}</span>
+                        <span className="text-gray-900 dark:text-white font-mono font-semibold">{stat.val}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-gray-200 dark:bg-white/5 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.random() * 40 + 60}%` }}
+                            animate={{ width: `${60 + i * 12}%` }}
                             transition={{ duration: 1.5, delay: i * 0.2 }}
-                            className={`h-full ${stat.color}`}
+                            className={`h-full ${stat.color} rounded-full`}
                           />
                         </div>
-                        <span className="text-xs text-green-400">
-                          {stat.change}
-                        </span>
+                        <span className="text-xs text-green-600 dark:text-green-400 font-mono">{stat.change}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-5 bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl backdrop-blur-sm">
-                <h3 className="flex items-center gap-2 text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-4">
+              {/* Quick Actions */}
+              <div className="p-5 bg-white/80 dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.02] border border-gray-200 dark:border-white/10 rounded-xl backdrop-blur-sm shadow-sm dark:shadow-none transition-colors">
+                <h3 className="flex items-center gap-2 text-[10px] font-bold text-cyan-700 dark:text-cyan-500 uppercase tracking-widest mb-4">
                   <Layers className="w-3 h-3" /> Quick Actions
                 </h3>
-                <div className="space-y-3">
-                  <button className="w-full p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-between group">
-                    <span className="text-xs text-slate-300">Bulk Shorten</span>
-                    <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-                  </button>
-                  <button className="w-full p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-between group">
-                    <span className="text-xs text-slate-300">API Settings</span>
-                    <Terminal className="w-3 h-3 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-                  </button>
-                  <button className="w-full p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors flex items-center justify-between group">
-                    <span className="text-xs text-slate-300">Export Data</span>
-                    <Download className="w-3 h-3 text-slate-500 group-hover:text-cyan-400 transition-colors" />
-                  </button>
+                <div className="space-y-2">
+                  {[
+                    { label: "Bulk Shorten", icon: LinkIcon },
+                    { label: "API Settings", icon: Terminal },
+                    { label: "Export Data", icon: Download },
+                  ].map(({ label, icon: Icon }, i) => (
+                    <button key={i} className="w-full p-2.5 bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 rounded-lg transition-colors flex items-center justify-between group border border-gray-200 dark:border-transparent">
+                      <span className="text-xs text-gray-600 dark:text-slate-300">{label}</span>
+                      <Icon className="w-3 h-3 text-gray-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors" />
+                    </button>
+                  ))}
                 </div>
               </div>
             </motion.div>
           </aside>
 
-          {/* Enhanced Main Content with Tabs - Increased z-index for mobile */}
-          <div className="lg:col-span-6 space-y-8 relative z-20">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-              >
-                <TabsList className="grid w-full grid-cols-3 bg-white/5 backdrop-blur-sm border border-white/10">
-                  <TabsTrigger
-                    value="create"
-                    className="data-[state=active]:bg-white/10 data-[state=active]:text-cyan-400"
-                  >
-                    <Sparkles className="w-4 h-4 mr-2" /> Create
+          {/* Main Content */}
+          <div className="lg:col-span-6 space-y-6 relative z-20">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-white/5 backdrop-blur-sm border border-gray-200 dark:border-white/10 p-1 rounded-xl">
+                  <TabsTrigger value="create" className="rounded-lg text-xs data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:text-cyan-700 dark:data-[state=active]:text-cyan-400 data-[state=active]:shadow-sm text-gray-500 dark:text-slate-400 transition-all">
+                    <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Buat
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="history" // Changed from analytics to history
-                    className="data-[state=active]:bg-white/10 data-[state=active]:text-cyan-400"
-                  >
-                    <History className="w-4 h-4 mr-2" /> History
+                  <TabsTrigger value="history" className="rounded-lg text-xs data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:text-cyan-700 dark:data-[state=active]:text-cyan-400 data-[state=active]:shadow-sm text-gray-500 dark:text-slate-400 transition-all">
+                    <History className="w-3.5 h-3.5 mr-1.5" /> Riwayat
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="settings"
-                    className="data-[state=active]:bg-white/10 data-[state=active]:text-cyan-400"
-                  >
-                    <LockKeyhole className="w-4 h-4 mr-2" /> Settings
+                  <TabsTrigger value="settings" className="rounded-lg text-xs data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:text-cyan-700 dark:data-[state=active]:text-cyan-400 data-[state=active]:shadow-sm text-gray-500 dark:text-slate-400 transition-all">
+                    <LockKeyhole className="w-3.5 h-3.5 mr-1.5" /> Pengaturan
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="create" className="mt-6">
-                  <StarshipCard className="relative overflow-hidden group hover:shadow-cyan-500/50 hover:border-cyan-500/50 transition-all duration-300">
-                    {/* Enhanced Animated Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5 opacity-50" />
-                    <div className="absolute -top-24 -right-24 opacity-5 group-hover:opacity-10 transition-opacity">
-                      <Rocket className="w-64 h-64 rotate-45" />
+                {/* ── CREATE TAB ── */}
+                <TabsContent value="create" className="mt-4">
+                  <StarshipCard className="relative overflow-hidden group hover:shadow-cyan-500/20 dark:hover:shadow-cyan-500/20 hover:shadow-md transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/3 via-transparent to-blue-500/3 opacity-50 dark:from-cyan-500/5 dark:to-blue-500/5" />
+                    <div className="absolute -top-20 -right-20 opacity-[0.04] group-hover:opacity-[0.07] transition-opacity">
+                      <Rocket className="w-56 h-56 rotate-45" />
                     </div>
 
-                    <motion.div
-                      variants={containerVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="relative z-10"
-                    >
-                      <div className="mb-8 border-l-2 border-cyan-500 pl-4">
-                        <h2 className="text-xl font-display uppercase tracking-widest text-white">
-                          Transmisi Link Baru
+                    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="relative z-10">
+                      <div className="mb-6 border-l-2 border-cyan-500 dark:border-cyan-500 pl-4">
+                        <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 dark:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Buat Tautan Pendek
                         </h2>
-                        <p className="text-xs text-slate-500 font-mono mt-1 italic">
-                          Input destinasi koordinat untuk kompresi data.
+                        <p className="text-xs text-gray-400 dark:text-slate-500 font-mono mt-1">
+                          Masukkan URL untuk dipersingkat
                         </p>
                       </div>
 
-                      <form onSubmit={handleSubmit} className="space-y-6">
+                      <form onSubmit={handleSubmit} className="space-y-5">
                         <motion.div variants={itemVariants}>
                           <StarshipInput
-                            label="Target Coordinates (URL)"
-                            placeholder="https://galaxy.io/deep-space-data"
+                            label="URL Target"
+                            placeholder="https://example.com/long-url"
                             value={url}
-                            onChange={(e) => setUrl(e.target.value)}
+                            onChange={e => setUrl(e.target.value)}
                             required
+                            data-testid="input-url"
                           />
                         </motion.div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <motion.div variants={itemVariants}>
                             <StarshipInput
-                              label="Custom Alias"
-                              placeholder="x-wing-01"
+                              label="Alias Kustom (opsional)"
+                              placeholder="nama-kustom"
                               value={customCode}
-                              onChange={(e) => setCustomCode(e.target.value)}
+                              onChange={e => setCustomCode(e.target.value)}
+                              data-testid="input-custom-code"
                             />
                           </motion.div>
-                          <motion.div
-                            variants={itemVariants}
-                            className="space-y-2"
-                          >
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                              Expiration
+                          <motion.div variants={itemVariants} className="space-y-2">
+                            <label className="flex items-center gap-1.5 text-xs font-semibold text-cyan-700 dark:text-primary/80 uppercase tracking-wider">
+                              <Terminal className="w-3.5 h-3.5" /> Kadaluarsa
                             </label>
-                            <Select
-                              value={expiration}
-                              onValueChange={setExpiration}
-                            >
-                              <SelectTrigger className="bg-black/40 border-white/10 h-11">
+                            <Select value={expiration} onValueChange={setExpiration}>
+                              <SelectTrigger className="bg-sky-50 dark:bg-black/40 border-cyan-200 dark:border-white/10 text-gray-800 dark:text-slate-200 h-11 focus:ring-1 focus:ring-cyan-400 dark:focus:ring-primary/50" data-testid="select-expiration">
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent className="bg-slate-900 border-white/10">
-                                <SelectItem value="1h">1 HOUR</SelectItem>
-                                <SelectItem value="1d">1 DAY</SelectItem>
-                                <SelectItem value="1w">1 WEEK</SelectItem>
-                                <SelectItem value="1m">1 MONTH</SelectItem>
-                                <SelectItem value="never">INFINITE</SelectItem>
+                              <SelectContent className="bg-white dark:bg-slate-900 border-gray-200 dark:border-white/10 text-gray-900 dark:text-slate-200">
+                                <SelectItem value="1h">1 Jam</SelectItem>
+                                <SelectItem value="1d">1 Hari</SelectItem>
+                                <SelectItem value="1w">1 Minggu</SelectItem>
+                                <SelectItem value="2w">2 Minggu</SelectItem>
+                                <SelectItem value="never">Selamanya</SelectItem>
                               </SelectContent>
                             </Select>
                           </motion.div>
                         </div>
 
-                        {/* Password Input Field */}
                         <motion.div variants={itemVariants}>
                           <StarshipInput
-                            label="Password (optional)"
-                            placeholder="Secure transmission key"
+                            label="Password (opsional)"
+                            placeholder="Min. 6 karakter"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            isPassword // Use the new prop
+                            onChange={e => setPassword(e.target.value)}
+                            isPassword
+                            data-testid="input-password"
                           />
                         </motion.div>
 
-                                              {/* Honeypot field for anti-spam */}
-                                              <div
-                                                style={{
-                                                  position: "absolute",
-                                                  left: "-9999px",
-                                                  top: "-9999px",
-                                                  opacity: 0,
-                                                  pointerEvents: "none",
-                                                }}
-                                              >
-                                                <StarshipInput
-                                                  label="Leave this field empty"
-                                                  name="honeypot"
-                                                  value={honeypotInput}
-                                                  onChange={(e) => setHoneypotInput(e.target.value)}
-                                                  tabIndex={-1}
-                                                  autoComplete="off"
-                                                />
-                                              </div>
-                        
-                                              {/* CAPTCHA Verification Field */}
-                                              <motion.div variants={itemVariants} className="space-y-2">
-                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                                  <ShieldCheck className="w-3 h-3" /> Verifikasi Manusia
-                                                </label>
-                                                <div className="flex items-center gap-2">
-                                                  <span className="flex-1 text-center font-mono text-xl md:text-2xl tracking-widest py-3 bg-white/5 rounded-lg border border-white/10 select-none">
-                                                    {captchaCode}
-                                                  </span>
-                                                  <button
-                                                    type="button"
-                                                    onClick={generateCaptcha}
-                                                    className="p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-colors active:scale-95"
-                                                    aria-label="Refresh CAPTCHA"
-                                                  >
-                                                    <RefreshCw className="w-5 h-5 text-slate-400" />
-                                                  </button>
-                                                </div>
-                                                <StarshipInput
-                                                  label="Masukkan Kode Di Atas"
-                                                  placeholder="Ketik kode di sini"
-                                                  value={captchaInput}
-                                                  onChange={(e) => {
-                                                    setCaptchaInput(e.target.value);
-                                                    if (showCaptchaError) setShowCaptchaError(false);
-                                                  }}
-                                                  isInvalid={showCaptchaError}
-                                                  required
-                                                />
-                                                 {showCaptchaError && (
-                                                  <p className="text-xs text-red-400 mt-1">Kode verifikasi salah. Coba lagi.</p>
-                                                )}
-                                              </motion.div>
-                        
-                                              <StarshipButton
-                                                type="submit"
-                                                disabled={mutation.isPending}
-                                                className="w-full py-6 group relative overflow-hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/20"
-                                              >                          <AnimatePresence mode="wait">
+                        {/* Honeypot (hidden) */}
+                        <div style={{ position: "absolute", left: "-9999px", opacity: 0, pointerEvents: "none" }}>
+                          <StarshipInput label="Leave empty" name="honeypot" value={honeypotInput} onChange={e => setHoneypotInput(e.target.value)} tabIndex={-1} autoComplete="off" />
+                        </div>
+
+                        {/* CAPTCHA */}
+                        <motion.div variants={itemVariants} className="space-y-3 p-4 bg-sky-50/80 dark:bg-white/[0.03] rounded-xl border border-cyan-200 dark:border-white/10">
+                          <label className="flex items-center gap-1.5 text-xs font-semibold text-cyan-700 dark:text-primary/80 uppercase tracking-wider">
+                            <ShieldCheck className="w-3.5 h-3.5" /> Verifikasi Manusia
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 text-center font-mono text-xl md:text-2xl tracking-[0.3em] py-3 bg-white dark:bg-white/5 rounded-lg border border-cyan-300 dark:border-white/20 select-none text-gray-800 dark:text-slate-100 shadow-inner">
+                              {captchaCode}
+                            </div>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button type="button" onClick={generateCaptcha} className="p-3 bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-lg transition-colors border border-gray-200 dark:border-white/10" aria-label="Refresh CAPTCHA">
+                                  <RefreshCw className="w-4 h-4 text-gray-500 dark:text-slate-400" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Ganti kode</p></TooltipContent>
+                            </Tooltip>
+                          </div>
+                          <StarshipInput
+                            placeholder="Ketik kode di atas"
+                            value={captchaInput}
+                            onChange={e => { setCaptchaInput(e.target.value); if (showCaptchaError) setShowCaptchaError(false); }}
+                            isInvalid={showCaptchaError}
+                            error={showCaptchaError ? "Kode verifikasi salah. Coba lagi." : undefined}
+                            required
+                            data-testid="input-captcha"
+                          />
+                        </motion.div>
+
+                        <StarshipButton
+                          type="submit"
+                          disabled={mutation.isPending}
+                          className="w-full py-4"
+                          data-testid="button-submit"
+                        >
+                          <AnimatePresence mode="wait">
                             {mutation.isPending ? (
-                              <motion.div
-                                key="loading"
-                                initial={{ y: 20 }}
-                                animate={{ y: 0 }}
-                                className="flex items-center gap-3"
-                              >
-                                <Rocket className="w-5 h-5 animate-bounce" />
-                                <span className="tracking-widest">
-                                  LAUNCHING TRANSMISSION...
-                                </span>
-                              </motion.div>
+                              <motion.span key="loading" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-2">
+                                <Rocket className="w-4 h-4 animate-bounce" />
+                                Memproses...
+                              </motion.span>
                             ) : (
-                              <motion.div
-                                key="idle"
-                                initial={{ y: -20 }}
-                                animate={{ y: 0 }}
-                                className="flex items-center gap-2"
-                              >
-                                <Zap className="w-4 h-4 text-yellow-400" />
-                                <span className="tracking-widest">
-                                  ENGAGE WARP DRIVE
-                                </span>
-                              </motion.div>
+                              <motion.span key="idle" initial={{ y: -10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-yellow-300" />
+                                Persingkat URL
+                              </motion.span>
                             )}
                           </AnimatePresence>
                         </StarshipButton>
                       </form>
 
+                      {/* Result */}
                       <AnimatePresence>
                         {shortenedUrl && (
                           <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="mt-8 p-6 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 rounded-xl relative group/output backdrop-blur-sm"
+                            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="mt-6 p-5 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/30 dark:border-cyan-500/30 rounded-xl relative"
                           >
-                            <div className="absolute -top-3 left-6 px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-500 text-black text-[10px] font-bold rounded">
-                              WARP LINK READY
+                            <div className="absolute -top-3 left-5 px-3 py-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-[10px] font-bold rounded-full shadow-md">
+                              ✅ LINK SIAP
                             </div>
-                            <div className="flex items-center gap-4">
-                              <div className="flex-1 font-mono text-cyan-400 text-sm overflow-hidden truncate">
-                                {shortenedUrl}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-1">
+                              <div className="flex-1 font-mono text-cyan-700 dark:text-cyan-400 text-sm overflow-hidden min-w-0">
+                                <a href={shortenedUrl} target="_blank" rel="noopener noreferrer" className="hover:underline truncate block">
+                                  {shortenedUrl}
+                                </a>
                               </div>
-                              <div className="flex gap-2">
-                                  <Tooltip>
+                              <div className="flex gap-1.5 flex-wrap">
+                                {[
+                                  { icon: isCopied ? Check : Copy, action: () => shareLink("copy", shortenedUrl), label: "Salin" },
+                                  { icon: Twitter, action: () => shareLink("twitter", shortenedUrl), label: "Twitter" },
+                                  { icon: Linkedin, action: () => shareLink("linkedin", shortenedUrl), label: "LinkedIn" },
+                                  { icon: WhatsappIcon, action: () => shareLink("whatsapp", shortenedUrl), label: "WhatsApp" },
+                                  { icon: QrCode, action: () => setShowQRCode(true), label: "QR Code" },
+                                ].map(({ icon: Icon, action, label }, i) => (
+                                  <Tooltip key={i}>
                                     <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => shareLink("copy", shortenedUrl)}
-                                        className="p-3 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
+                                      <motion.button
+                                        onClick={action}
+                                        whileTap={{ scale: 0.9 }}
+                                        className="p-2 bg-cyan-500/15 hover:bg-cyan-500 text-cyan-700 dark:text-cyan-400 hover:text-white rounded-lg transition-all"
                                       >
-                                        {isCopied ? (
-                                          <Check className="w-5 h-5" />
-                                        ) : (
-                                          <Copy className="w-5 h-5" />
-                                        )}
-                                      </button>
+                                        <Icon className="w-4 h-4" />
+                                      </motion.button>
                                     </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Copy Link</p>
-                                    </TooltipContent>
+                                    <TooltipContent><p>{label}</p></TooltipContent>
                                   </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => shareLink("twitter", shortenedUrl)}
-                                        className="p-3 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
-                                      >
-                                        <Twitter className="w-5 h-5" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Share on X (Twitter)</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => shareLink("linkedin", shortenedUrl)}
-                                        className="p-3 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
-                                    >
-                                      <Linkedin className="w-5 h-5" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Share on LinkedIn</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => shareLink("whatsapp", shortenedUrl)}
-                                        className="p-3 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
-                                      >
-                                        <WhatsappIcon className="w-5 h-5" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Share on WhatsApp</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={generateQRCode}
-                                        className="p-3 bg-cyan-500/20 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
-                                      >
-                                        <QrCode className="w-5 h-5" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Show QR Code</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                                ))}
                               </div>
                             </div>
                           </motion.div>
@@ -795,105 +543,72 @@ export default function Home() {
                   </StarshipCard>
                 </TabsContent>
 
-                <TabsContent value="history" className="mt-6">
-                  <StarshipCard className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-lg font-display uppercase tracking-widest text-white">
+                {/* ── HISTORY TAB ── */}
+                <TabsContent value="history" className="mt-4">
+                  <StarshipCard>
+                    <div className="flex justify-between items-center mb-5">
+                      <h3 className="text-base font-bold uppercase tracking-wider text-gray-900 dark:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
                         Riwayat Transmisi
                       </h3>
                       {history.length > 0 && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
-                              onClick={clearAllHistory}
-                              className="p-2 bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-all active:scale-95"
-                              aria-label="Clear all history"
-                            >
-                              <Trash2 className="w-4 h-4" />
+                            <button onClick={clearAllHistory} className="p-1.5 bg-red-100 dark:bg-red-500/20 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white rounded-lg transition-all" aria-label="Hapus semua">
+                              <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Clear All History</p>
-                          </TooltipContent>
+                          <TooltipContent><p>Hapus Semua</p></TooltipContent>
                         </Tooltip>
                       )}
                     </div>
                     {history.length === 0 ? (
-                      <div className="text-center py-8 border border-dashed border-white/10 rounded-lg">
-                        <p className="text-sm text-slate-600 font-mono italic">
-                          Belum ada transmisi data yang tercatat di sesi ini.
-                        </p>
-                      </div>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-center py-10 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-xl"
+                      >
+                        <History className="w-10 h-10 text-gray-300 dark:text-slate-600 mx-auto mb-3" />
+                        <p className="text-sm text-gray-400 dark:text-slate-500 font-mono">Belum ada riwayat tautan.</p>
+                      </motion.div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         {history.map((item, i) => (
                           <motion.div
                             key={item.id}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            className="p-4 bg-white/5 rounded-lg flex items-center justify-between group"
+                            transition={{ delay: i * 0.04 }}
+                            className="p-3.5 bg-gray-50 dark:bg-white/[0.04] hover:bg-gray-100 dark:hover:bg-white/[0.07] rounded-xl flex items-center gap-3 group border border-gray-200 dark:border-white/5 transition-colors"
+                            data-testid={`card-history-${item.id}`}
                           >
-                            <div className="flex-1 overflow-hidden">
+                            <div className="flex-1 overflow-hidden min-w-0">
                               <Tooltip>
-                                  <TooltipTrigger asChild>
-                                          <a href={item.fullUrl} target="_blank" rel="noopener noreferrer" className="block text-cyan-400 hover:text-cyan-300 truncate font-mono text-sm">
-                                              {item.fullUrl}
-                                          </a>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                      <p>{item.original}</p>
-                                  </TooltipContent>
+                                <TooltipTrigger asChild>
+                                  <a href={item.fullUrl} target="_blank" rel="noopener noreferrer" className="block text-cyan-700 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 truncate font-mono text-sm font-medium">
+                                    {item.fullUrl}
+                                  </a>
+                                </TooltipTrigger>
+                                <TooltipContent><p className="max-w-xs break-all">{item.original}</p></TooltipContent>
                               </Tooltip>
-                              <p className="text-xs text-slate-500 mt-1">
-                                Original: <span className="font-mono">{item.original.length > 40 ? item.original.substring(0, 37) + "..." : item.original}</span>
+                              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 truncate">
+                                {item.original.length > 45 ? item.original.slice(0, 42) + "..." : item.original}
                               </p>
                             </div>
-                            <div className="flex gap-2 ml-4">
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => copyToClipboard(item.fullUrl, i)}
-                                        className="p-2 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
-                                      >
-                                        {copiedIndex === i ? (
-                                          <Check className="w-4 h-4" />
-                                        ) : (
-                                          <Copy className="w-4 h-4" />
-                                        )}
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Copy Link</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => setShowQRCode(true)} // Open QR for this specific item
-                                        className="p-2 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-black rounded-lg transition-all active:scale-95"
-                                      >
-                                        <QrCode className="w-4 h-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Show QR Code</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <button
-                                        onClick={() => deleteHistoryItem(item.id)}
-                                        className="p-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-all active:scale-95"
-                                        aria-label="Delete link"
-                                      >
-                                        <Trash2 className="w-4 h-4" />
-                                      </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Delete Link</p>
-                                    </TooltipContent>
-                                  </Tooltip>
+                            <div className="flex gap-1.5 shrink-0">
+                              {[
+                                { icon: copiedIndex === i ? Check : Copy, action: () => copyToClipboard(item.fullUrl, i), label: "Salin", style: "bg-cyan-100 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white" },
+                                { icon: QrCode, action: () => setShowQRCode(true), label: "QR Code", style: "bg-blue-100 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-500 hover:text-white" },
+                                { icon: Trash2, action: () => deleteHistoryItem(item.id), label: "Hapus", style: "bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white" },
+                              ].map(({ icon: Icon, action, label, style }, j) => (
+                                <Tooltip key={j}>
+                                  <TooltipTrigger asChild>
+                                    <button onClick={action} className={`p-1.5 rounded-lg transition-all ${style}`} data-testid={`button-${label.toLowerCase()}-${item.id}`}>
+                                      <Icon className="w-3.5 h-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>{label}</p></TooltipContent>
+                                </Tooltip>
+                              ))}
                             </div>
                           </motion.div>
                         ))}
@@ -902,262 +617,227 @@ export default function Home() {
                   </StarshipCard>
                 </TabsContent>
 
-                <TabsContent value="settings" className="mt-6">
-                  <StarshipCard className="p-6">
-                    <h3 className="text-lg font-display uppercase tracking-widest text-white mb-6">
-                      Settings
+                {/* ── SETTINGS TAB ── */}
+                <TabsContent value="settings" className="mt-4">
+                  <StarshipCard>
+                    <h3 className="text-base font-bold uppercase tracking-wider text-gray-900 dark:text-white mb-5" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      Pengaturan
                     </h3>
-                    <div className="space-y-6">
-                      <div className="p-4 bg-white/5 rounded-lg">
-                        <div className="flex justify-between items-center">
+                    <div className="space-y-3">
+                      {[
+                        { icon: LockKeyhole, title: "Proteksi Password", desc: "Lindungi tautan dengan password" },
+                        { icon: Globe, title: "Domain Kustom", desc: "Gunakan domain sendiri untuk tautan" },
+                        { icon: Terminal, title: "Akses API", desc: "Buat API key untuk developer" },
+                        { icon: Sun, title: "Tema", desc: theme === "dark" ? "Mode gelap aktif — klik untuk mode terang" : "Mode terang aktif — klik untuk mode gelap", action: toggleTheme },
+                      ].map(({ icon: Icon, title, desc, action }, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          className="p-4 bg-gray-50 dark:bg-white/[0.04] hover:bg-gray-100 dark:hover:bg-white/[0.07] rounded-xl border border-gray-200 dark:border-white/5 flex justify-between items-center group cursor-pointer transition-colors"
+                          onClick={action}
+                        >
                           <div>
-                            <h4 className="text-sm font-medium text-white">
-                              Password Protection
-                            </h4>
-                            <p className="text-xs text-slate-500 mt-1">
-                              Require password to access links
-                            </p>
+                            <h4 className="text-sm font-semibold text-gray-800 dark:text-white">{title}</h4>
+                            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{desc}</p>
                           </div>
-                          <button className="p-2 bg-white/10 rounded-lg">
-                            <LockKeyhole className="w-4 h-4 text-slate-400" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-white/5 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="text-sm font-medium text-white">
-                              Custom Domain
-                            </h4>
-                            <p className="text-xs text-slate-500 mt-1">
-                              Use your own domain for links
-                            </p>
+                          <div className="p-2 bg-gray-200 dark:bg-white/10 group-hover:bg-cyan-500/20 rounded-lg transition-colors">
+                            <Icon className="w-4 h-4 text-gray-500 dark:text-slate-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors" />
                           </div>
-                          <button className="p-2 bg-white/10 rounded-lg">
-                            <Globe className="w-4 h-4 text-slate-400" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-white/5 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <h4 className="text-sm font-medium text-white">
-                              API Access
-                            </h4>
-                            <p className="text-xs text-slate-500 mt-1">
-                              Generate API keys for developers
-                            </p>
-                          </div>
-                          <button className="p-2 bg-white/10 rounded-lg">
-                            <Terminal className="w-4 h-4 text-slate-400" />
-                          </button>
-                        </div>
-                      </div>
+                        </motion.div>
+                      ))}
                     </div>
                   </StarshipCard>
                 </TabsContent>
               </Tabs>
             </motion.div>
 
-            {/* Feature Showcase Section */}
-            <section className="mt-12">
-              <h3 className="text-xl font-display uppercase tracking-widest text-white text-center mb-8">
-                Mengapa Memilih Starlink Command?
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Feature Showcase */}
+            <section className="mt-8">
+              <motion.h3
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="text-lg font-bold uppercase tracking-wider text-gray-900 dark:text-white text-center mb-6"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                Mengapa Starlink Command?
+              </motion.h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  {
-                    icon: Zap,
-                    title: "Warp Speed Shortening",
-                    description: "Kompresi tautan dalam sekejap mata. Transmisi data hiper-cepat adalah prioritas kami."
-                  },
-                  {
-                    icon: QrCode,
-                    title: "Kode QR Otomatis",
-                    description: "Setiap tautan pendek dilengkapi dengan Kode QR yang siap dipindai dan dibagikan secara instan."
-                  },
-                  {
-                    icon: ShieldCheck,
-                    title: "Keamanan Transmisi",
-                    description: "Tautan Anda dienkripsi dan dilindungi, memastikan navigasi yang aman di seluruh galaksi."
-                  },
-                  {
-                    icon: Share2,
-                    title: "Berbagi Lintas Semesta",
-                    description: "Bagikan tautan Anda dengan mudah ke berbagai platform sosial media, dari satu titik kendali."
-                  }
+                  { icon: Zap, title: "Sangat Cepat", description: "Buat tautan pendek dalam hitungan detik.", color: "text-yellow-600 dark:text-yellow-400", bg: "bg-yellow-100 dark:bg-yellow-500/10" },
+                  { icon: QrCode, title: "QR Code Otomatis", description: "Setiap tautan dilengkapi QR Code siap pakai.", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-100 dark:bg-blue-500/10" },
+                  { icon: ShieldCheck, title: "Keamanan Tinggi", description: "Enkripsi dan proteksi password tersedia.", color: "text-green-600 dark:text-green-400", bg: "bg-green-100 dark:bg-green-500/10" },
+                  { icon: Share2, title: "Mudah Dibagikan", description: "Bagikan ke sosial media dengan satu klik.", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-100 dark:bg-purple-500/10" },
                 ].map((feature, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 50 }}
+                    initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.6, delay: i * 0.1 }}
-                    className="p-6 bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl backdrop-blur-sm flex items-start space-x-4"
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    whileHover={{ y: -2, transition: { duration: 0.2 } }}
+                    className="p-5 bg-white/80 dark:bg-white/[0.03] border border-gray-200 dark:border-white/10 rounded-xl flex items-start gap-4 hover:shadow-md dark:hover:shadow-none hover:border-cyan-300 dark:hover:border-white/20 transition-all"
                   >
-                    <feature.icon className="w-8 h-8 text-cyan-400 flex-shrink-0" />
+                    <div className={`p-2.5 ${feature.bg} rounded-xl shrink-0`}>
+                      <feature.icon className={`w-5 h-5 ${feature.color}`} />
+                    </div>
                     <div>
-                      <h4 className="text-md font-bold text-white mb-2">{feature.title}</h4>
-                      <p className="text-sm text-slate-400">{feature.description}</p>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{feature.title}</h4>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">{feature.description}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-                      </section>
-            
-                      {/* FAQ Section */}
-                      <section className="mt-12">
-                        <h3 className="text-xl font-display uppercase tracking-widest text-white text-center mb-8">
-                          FAQ: Tanya Jawab Umum
-                        </h3>
-                        <Accordion type="single" collapsible className="w-full">
-                          {faqData.map((faq, i) => (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, y: 20 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: true, amount: 0.5 }}
-                              transition={{ duration: 0.5, delay: i * 0.05 }}
-                            >
-                              <AccordionItem value={`item-${i}`} className="border-b border-white/10">
-                                <AccordionTrigger className="text-white hover:text-cyan-400 text-left">
-                                  {faq.question}
-                                </AccordionTrigger>
-                                <AccordionContent className="text-slate-400">
-                                  {faq.answer}
-                                </AccordionContent>
-                              </AccordionItem>
-                            </motion.div>
-                          ))}
-                        </Accordion>
-                      </section>
-            
-                    </div>
+            </section>
 
-          {/* Original Right Sidebar with Analytics, now "Recent Logs" is gone as it's in the tab */}
-          <aside className="lg:col-span-3 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-4"
-            >
-              {/* The "Recent Logs" sidebar content is now moved to the "History" tab */}
-              {/* Keeping the Analytics and Quick Actions as they are general stats/features */}
-              <div className="p-5 bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl backdrop-blur-sm">
-                <h3 className="flex items-center gap-2 text-[10px] font-bold text-cyan-500 uppercase tracking-widest mb-4">
-                  <BarChart3 className="w-3 h-3" /> Real-time Data Stream
+            {/* FAQ */}
+            <section className="mt-8">
+              <motion.h3
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="text-lg font-bold uppercase tracking-wider text-gray-900 dark:text-white text-center mb-6"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                FAQ: Tanya Jawab
+              </motion.h3>
+              <Accordion type="single" collapsible className="w-full space-y-2">
+                {faqData.map((faq, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                  >
+                    <AccordionItem value={`item-${i}`} className="border border-gray-200 dark:border-white/10 rounded-xl px-4 bg-white/60 dark:bg-white/[0.02]">
+                      <AccordionTrigger className="text-sm font-medium text-gray-800 dark:text-slate-200 hover:text-cyan-700 dark:hover:text-cyan-400 py-4 text-left">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-gray-500 dark:text-slate-400 pb-4 leading-relaxed">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </motion.div>
+                ))}
+              </Accordion>
+            </section>
+          </div>
+
+          {/* Right Sidebar */}
+          <aside className="lg:col-span-3 space-y-5 hidden lg:block">
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} className="space-y-4">
+              {/* Real-time stats */}
+              <div className="p-5 bg-white/80 dark:bg-gradient-to-br dark:from-white/5 dark:to-white/[0.02] border border-gray-200 dark:border-white/10 rounded-xl backdrop-blur-sm shadow-sm dark:shadow-none">
+                <h3 className="flex items-center gap-2 text-[10px] font-bold text-cyan-700 dark:text-cyan-500 uppercase tracking-widest mb-4">
+                  <Activity className="w-3 h-3" /> Real-time Data
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {[
-                    { label: "Active Probes", val: "128", trend: "up", icon: Activity },
-                    { label: "Data Packets", val: "5.2M", trend: "up", icon: Globe },
-                    { label: "Threat Level", val: "LOW", trend: "stable", icon: ShieldCheck },
+                    { label: "Active Probes", val: "128", icon: Activity },
+                    { label: "Data Packets", val: "5.2M", icon: Globe },
+                    { label: "Threat Level", val: "LOW", icon: ShieldCheck },
                   ].map((metric, i) => (
                     <div key={i} className="flex justify-between items-center text-xs">
-                      <div className="flex items-center gap-2 text-slate-400">
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400">
                         <metric.icon className="w-3 h-3" /> {metric.label}
                       </div>
-                      <span className="font-mono text-white">{metric.val}</span>
+                      <span className="font-mono text-gray-900 dark:text-white font-semibold">{metric.val}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="p-5 bg-gradient-to-br from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-xl backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-cyan-400 mb-2">
+              {/* Security notice */}
+              <div className="p-5 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-500/10 dark:to-transparent border border-cyan-200 dark:border-cyan-500/20 rounded-xl">
+                <div className="flex items-center gap-2 text-cyan-700 dark:text-cyan-400 mb-2">
                   <Eye className="w-4 h-4" />
-                  <span className="text-[10px] font-bold uppercase">
-                    Transmisi Terenkripsi
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Transmisi Terenkripsi</span>
                 </div>
-                <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Semua link dienkripsi melalui protokol Quantum-Tunneling sebelum
-                  disimpan di core database. Keamanan data Anda adalah prioritas tertinggi.
+                <p className="text-[10px] text-gray-500 dark:text-slate-400 leading-relaxed">
+                  Semua tautan dienkripsi sebelum disimpan. Keamanan data Anda adalah prioritas kami.
                 </p>
-                <div className="mt-4 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs text-green-400">
-                    Semua Sistem Beroperasi Optimal
-                  </span>
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">Semua Sistem Normal</span>
                 </div>
               </div>
+
+              {/* Theme Quick Toggle */}
+              <motion.button
+                onClick={toggleTheme}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full p-4 bg-white/80 dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-xl flex items-center justify-between group hover:border-cyan-300 dark:hover:border-cyan-500/30 transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  {theme === "dark" ? <Moon className="w-4 h-4 text-blue-600 dark:text-blue-400" /> : <Sun className="w-4 h-4 text-yellow-500" />}
+                  <span className="text-xs font-medium text-gray-700 dark:text-slate-300">
+                    {theme === "dark" ? "Mode Gelap" : "Mode Terang"}
+                  </span>
+                </div>
+                <div className="w-10 h-5 rounded-full bg-gray-300 dark:bg-cyan-500/30 relative transition-colors">
+                  <motion.div
+                    animate={{ x: theme === "dark" ? 20 : 2 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-cyan-400 shadow-sm"
+                  />
+                </div>
+              </motion.button>
             </motion.div>
           </aside>
         </main>
 
-        {/* QR Code Modal */}
+        {/* ── QR CODE MODAL ── */}
         <AnimatePresence>
-          {showQRCode && (
+          {showQRCode && shortenedUrl && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+              className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
               onClick={() => setShowQRCode(false)}
             >
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-slate-900 border border-white/10 rounded-xl p-6 max-w-sm w-full"
-                onClick={(e) => e.stopPropagation()}
+                initial={{ scale: 0.85, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.85, opacity: 0, y: 20 }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 rounded-2xl p-6 max-w-xs w-full shadow-2xl"
+                onClick={e => e.stopPropagation()}
               >
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-display uppercase tracking-widest text-white">
-                    Kode QR Tautan Anda
-                  </h3>
-                  <button
-                    onClick={() => setShowQRCode(false)}
-                    className="p-1 rounded-lg hover:bg-white/10 transition-colors"
-                  >
-                    <RefreshCw className="w-4 h-4 text-slate-400" />
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">QR Code</h3>
+                  <button onClick={() => setShowQRCode(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-slate-400">
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="bg-white p-4 rounded-lg flex justify-center">
-                  <QRCode value={shortenedUrl} size={200} />
+                <div className="bg-white p-4 rounded-xl border border-gray-200 flex justify-center">
+                  <QRCode value={shortenedUrl} size={180} />
                 </div>
-                <p className="text-xs text-slate-400 mt-4 text-center">
-                  Pindai kode ini untuk mengakses tautan dengan cepat.
-                </p>
+                <p className="text-xs text-gray-400 dark:text-slate-500 mt-3 text-center font-mono truncate">{shortenedUrl}</p>
+                <StarshipButton className="mt-4" onClick={() => setShowQRCode(false)} variant="outline">
+                  Tutup
+                </StarshipButton>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-
-        <footer className="fixed bottom-0 w-full h-10 bg-black/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-4 md:px-8 text-[10px] font-mono text-slate-600 z-30">
-          <div className="flex items-center gap-2 md:gap-4">
-            <span className="animate-pulse mr-2">●</span>
-            <span className="hidden md:inline">SECTOR: 07-G // PROTOCOL: STAR-SHORT // v.4.2.0-PRO</span>
-            <span className="md:hidden">STAR-SHORT v4.2.0</span>
+        {/* ── FOOTER ── */}
+        <footer className="fixed bottom-0 w-full h-9 bg-white/90 dark:bg-black/80 backdrop-blur-xl border-t border-gray-200 dark:border-white/5 flex items-center justify-between px-4 md:px-8 text-[10px] font-mono z-30 transition-colors">
+          <div className="flex items-center gap-2">
+            <span className="text-green-500 animate-pulse">●</span>
+            <span className="text-gray-400 dark:text-slate-600 hidden md:inline">STAR-SHORT // PROTOCOL: ACTIVE // v4.2.0-PRO</span>
+            <span className="text-gray-400 dark:text-slate-600 md:hidden">STAR-SHORT v4.2.0</span>
           </div>
-          <div className="flex items-center gap-2 md:gap-4">
-            <span className="text-green-400 hidden md:inline">STATUS: ONLINE</span>
-            <span className="text-green-400 md:hidden">ONLINE</span>
-            <span className="hidden md:inline">PING: 12ms</span>
+          <div className="flex items-center gap-3">
+            <span className="text-green-600 dark:text-green-400 font-semibold">ONLINE</span>
+            <span className="text-gray-400 dark:text-slate-600 hidden md:inline">PING: 12ms</span>
           </div>
         </footer>
-
-        <style>{`
-          .font-display { font-family: 'Inter', sans-serif; }
-          
-          /* Improved mobile scrolling and touch interactions */
-          html, body {
-            -webkit-overflow-scrolling: touch;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-          }
-          
-          /* Enhanced mobile responsiveness */
-          @media (max-width: 768px) {
-            .main-content {
-              padding-bottom: 3rem; /* Add space for fixed footer */
-            }
-          }
-        `}</style>
       </div>
     </TooltipProvider>
   );
