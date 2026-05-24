@@ -75,6 +75,7 @@ export async function registerRoutes(
         case "1d": expiresAt = addDays(now, 1); break;
         case "1w": expiresAt = addWeeks(now, 1); break;
         case "2w": expiresAt = addWeeks(now, 2); break;
+        case "custom": expiresAt = input.customExpirationDays ? addDays(now, input.customExpirationDays) : null; break;
         case "never": expiresAt = null; break;
       }
 

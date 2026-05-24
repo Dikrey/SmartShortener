@@ -42,9 +42,10 @@ export type ResolveUrlResponse = z.infer<typeof resolveUrlResponseSchema>; // Ne
 export const createUrlRequestSchema = z.object({
   originalUrl: z.string().url("Please enter a valid URL"),
   customCode: z.string().min(3).max(20).regex(/^[a-zA-Z0-9-_]+$/, "Only letters, numbers, dashes, and underscores").optional(),
-  expiration: z.enum(["1m", "1h", "1d", "1w", "2w", "never"]).default("never"),
-  password: z.string().min(6, "Password must be at least 6 characters long").optional().or(z.literal("")), // Optional password
-  honeypot: z.string().optional(), // Honeypot field for anti-spam
+  expiration: z.enum(["1m", "1h", "1d", "1w", "2w", "custom", "never"]).default("never"),
+  customExpirationDays: z.number().int().min(1).max(365).optional(),
+  password: z.string().min(6, "Password must be at least 6 characters long").optional().or(z.literal("")),
+  honeypot: z.string().optional(),
 });
 
 export type CreateUrlRequest = z.infer<typeof createUrlRequestSchema>;
